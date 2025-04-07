@@ -28,40 +28,144 @@ def inference(model=None):
     
     from ultralytics import YOLO  # 导入YOLO模型类
 
+    # 美化Streamlit应用界面方案
+    # 针对您的Streamlit应用，我提供以下美化方案，主要从标题样式、布局、颜色主题、交互元素和视觉效果等方面进行优化：
+    
+    ## 1. 标题和主题优化
     # 隐藏Streamlit默认菜单的CSS样式
-    menu_style_cfg = """<style>MainMenu {visibility: hidden;}</style>"""
-
+    menu_style_cfg = """<style>
+        MainMenu {visibility: hidden;}
+        footer {visibility: hidden;}
+        #header {visibility: hidden;}
+    </style>"""
+    
     # 主标题的HTML样式配置
-    main_title_cfg = """<div><h1 style="color:#FF64DA; text-align:center; font-size:40px; 
-                             font-family: 'Archivo', sans-serif; margin-top:-50px;margin-bottom:20px;">
-                    Ultralytics YOLO Streamlit Application
-                    </h1></div>"""
-
+    main_title_cfg = """
+    <div>
+        <h1 style="color:#4B8BF5; text-align:center; font-size:42px; 
+            font-family: 'Arial', sans-serif; margin-top:-30px; margin-bottom:10px; 
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);">
+                智能视频分析系统
+        </h1>
+    </div>"""
+    
     # 副标题的HTML样式配置
-    sub_title_cfg = """<div><h4 style="color:#042AFF; text-align:center; 
-                    font-family: 'Archivo', sans-serif; margin-top:-15px; margin-bottom:50px;">
-                    Experience real-time object detection on your webcam with the power of Ultralytics YOLO! 🚀</h4>
-                    </div>"""
+    sub_title_cfg = """
+    <div>
+        <h4 style="color:#555555; text-align:center; font-family: 'Arial', sans-serif; 
+            margin-top:-5px; margin-bottom:30px; font-weight:300;">
+            基于YOLO的实时目标检测与分析平台
+        </h4>
+    </div>"""
 
     # 设置Streamlit页面配置
-    st.set_page_config(page_title="Ultralytics Streamlit App", layout="wide", initial_sidebar_state="auto")
+    st.set_page_config(
+        page_title="智能视频分析系统", 
+        layout="wide", 
+        initial_sidebar_state="auto",
+        page_icon="🎯"
+    )
+
+    # 应用全局CSS样式
+    global_css = """
+    <style>
+        /* 全局字体和背景 */
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f5f7fa;
+        }
+        
+        /* 侧边栏样式 */
+        .css-1d391kg {
+            background-color: #f0f2f6;
+        }
+        
+        /* 按钮样式 */
+        .stButton>button {
+            background-color: #4B8BF5;
+            color: white;
+            border-radius: 5px;
+            border: none;
+            padding: 8px 16px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        .stButton>button:hover {
+            background-color: #3a7ad5;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        /* 滑块样式 */
+        .stSlider>div>div>div {
+            background-color: #4B8BF5;
+        }
+
+
+        /* 滑块两端数字背景样式 */
+        .stSlider .st-eb {
+            background-color: #4B8BF5 !important;
+            color: white !important;
+            border-radius: 4px !important;
+            padding: 2px 4px !important;
+        }
+        
+        /* 卡片样式 */
+        .stBlock {
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            padding: 20px;
+            background-color: white;
+        }
+        
+        /* 视频框样式 */
+        .stImage {
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+        }
+        
+        /* 标题样式 */
+        h1, h2, h3, h4 {
+            color: #333;
+        }
+    </style>
+    """
+    st.markdown(global_css, unsafe_allow_html=True)
 
     # 应用自定义HTML样式
     st.markdown(menu_style_cfg, unsafe_allow_html=True)
     st.markdown(main_title_cfg, unsafe_allow_html=True)
     st.markdown(sub_title_cfg, unsafe_allow_html=True)
 
-    # 在侧边栏添加Ultralytics logo
+    # 在侧边栏添加自定义logo
     with st.sidebar:
-        logo = "https://raw.githubusercontent.com/ultralytics/assets/main/logo/Ultralytics_Logotype_Original.svg"
-        st.image(logo, width=250)
+        # 可以替换为您自己的logo
+        # logo = "https://raw.githubusercontent.com/ultralytics/assets/main/logo/Ultralytics_Logotype_Original.svg"
+        logo = r"B:\images\like\dfb598baf82a0c1917d2c855856683c81759312887.jpg"
+        
+        st.image(logo, width=200)
+        
+        # 添加分隔线
+        st.markdown("<hr style='margin-top:0; margin-bottom:20px; border:none; height:1px; background-color:#e0e0e0;'>", unsafe_allow_html=True)
+        
+        # 侧边栏标题样式 - 修改为汪汪队立大功主题
+        st.markdown("""
+        <div style="text-align:center;">
+            <h3 style="color:#FF6B6B; margin-bottom:10px; font-family:'Comic Sans MS', cursive; 
+                text-shadow: 1px 1px 2px #FFD166;">
+                🐾 汪汪队立大功 🐾
+            </h3>
+            <p style="color:#118AB2; font-size:14px; font-style:italic; margin-top:0;">
+                随时待命，随叫随到！
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
 
     # 侧边栏用户配置区域
-    st.sidebar.title("User Configuration")
+    st.sidebar.title("用户配置")
 
     # 视频源选择下拉框
     source = st.sidebar.selectbox(
-        "Video",
+        "视频源选择",
         ("webcam", "video", "demo_play"),  # 新增演示播放选项
     )
 
@@ -82,8 +186,8 @@ def inference(model=None):
         vid_file_name = 0  # 0表示使用默认摄像头
     elif source == "demo_play":
         # 演示模式：上传原始视频，自动加载处理后的视频
-        st.sidebar.markdown("### 演示模式")
-        st.sidebar.markdown("上传原始视频，点击按钮后将自动加载处理后的视频并平行播放")
+        # st.sidebar.markdown("### 演示模式")
+        # st.sidebar.markdown("上传原始视频，点击按钮后将自动加载处理后的视频并平行播放")
         
         # 上传原始视频
         vid_file = st.sidebar.file_uploader("上传原始视频", type=["mp4", "mov", "avi", "mkv"])
@@ -112,12 +216,12 @@ def inference(model=None):
                 for path in possible_paths:
                     if os.path.exists(path):
                         processed_video_path = path
-                        st.sidebar.success(f"已找到处理后视频: {path}")
+                        st.sidebar.success(f"ok")
                         play_demo = True  # 设置为True，触发播放
                         break
                 
                 if not processed_video_path:
-                    st.sidebar.error("未找到对应的处理后视频，请确保处理后视频已准备好")
+                    st.sidebar.error("error")
                     # 为了演示，可以提供一个默认的处理后视频
                     if os.path.exists("demo_processed.mp4"):
                         processed_video_path = "demo_processed.mp4"
@@ -150,17 +254,120 @@ def inference(model=None):
 
     # 跟踪功能开关
     enable_trk = st.sidebar.radio("Enable Tracking", ("Yes", "No"))
-    # 置信度阈值滑块
-    conf = float(st.sidebar.slider("Confidence Threshold", 0.0, 1.0, 0.25, 0.01))
-    # IoU阈值滑块
-    iou = float(st.sidebar.slider("IoU Threshold", 0.0, 1.0, 0.45, 0.01))
+    
+    # 添加阈值设置的标题和说明
+    st.sidebar.markdown("""
+    <div style="background-color:#f8f9fa; padding:10px; border-radius:8px; margin-top:15px; margin-bottom:10px;">
+        <h4 style="color:#FF6B6B; margin:0 0 5px 0; font-size:16px;">检测参数设置</h4>
+        <p style="color:#666; font-size:12px; margin:0;">
+            调整以下参数可以控制检测的精确度和召回率
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # 置信度阈值滑块 - 美化版
+    conf_col1, conf_col2 = st.sidebar.columns([3, 1])
+    with conf_col1:
+        conf = float(st.slider(
+            "置信度阈值", 
+            min_value=0.0, 
+            max_value=1.0, 
+            value=0.25, 
+            step=0.01,
+            format="%.2f",
+            help="较高的置信度阈值会减少误检，但可能会漏检一些对象"
+        ))
+    with conf_col2:
+        st.markdown(f"""
+        <div style="background-color:#e6f3ff; padding:8px; border-radius:5px; 
+                    text-align:center; margin-top:23px;">
+            <span style="font-weight:bold; color:#4B8BF5;">{conf:.2f}</span>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    # IoU阈值滑块 - 美化版
+    iou_col1, iou_col2 = st.sidebar.columns([3, 1])
+    with iou_col1:
+        iou = float(st.slider(
+            "IoU阈值", 
+            min_value=0.0, 
+            max_value=1.0, 
+            value=0.45, 
+            step=0.01,
+            format="%.2f",
+            help="控制重叠框的过滤程度，较高的值会减少重复检测"
+        ))
+    with iou_col2:
+        # 使用st.markdown创建自定义HTML/CSS样式的数值显示框
+        # f-string用于将Python变量(iou)动态插入到HTML中
+        st.markdown(f"""
+        <div style="background-color:transparent; padding:8px; border-radius:5px; 
+                    text-align:center; margin-top:23px; border:1px dashed #d0d0d0;">
+            <!-- 样式设计：
+                - background-color:transparent：设置透明背景
+                - padding:8px：内边距为8像素，使内容不会贴近边缘
+                - border-radius:5px：圆角边框，美化显示效果
+                - text-align:center：文本居中对齐
+                - margin-top:23px：上边距23像素，与滑块垂直对齐
+                - border:1px dashed #d0d0d0：添加虚线边框，在透明背景下提供视觉边界
+            -->
+            <span style="font-weight:bold; color:#4B8BF5;">{iou:.2f}</span>
+            <!-- 
+                数值显示：
+                - font-weight:bold：文字加粗，增强可读性
+                - color:#4B8BF5：使用蓝色(#4B8BF5)显示数值，与应用整体色调一致
+                - {iou:.2f}：格式化IoU值，保留两位小数
+            -->
+        </div>
+        """, unsafe_allow_html=True)  # unsafe_allow_html=True允许渲染HTML
+    
+    # 添加参数说明提示
+    st.sidebar.markdown("""
+    <div style="background-color:#f0f7ff; padding:8px; border-radius:5px; margin-top:5px;">
+        <p style="color:#666; font-size:12px; margin:0;">
+            <span style="color:#FF6B6B; font-weight:bold;">提示：</span> 
+            置信度越高，检测越精确但可能漏检；IoU越高，重叠框过滤越严格。
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
 
-    # 创建两列布局
+    # 创建两列布局并美化
     col1, col2 = st.columns(2)
+    
+    # 添加视频区域标题和边框
+    with col1:
+        st.markdown("""
+        <div style="background-color:white; padding:10px; border-radius:10px; 
+                    box-shadow:0 2px 5px rgba(0,0,0,0.1); margin-bottom:10px;">
+            <h3 style="color:#4B8BF5; text-align:center; margin:0;">
+                原始视频
+            </h3>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col2:
+        st.markdown("""
+        <div style="background-color:white; padding:10px; border-radius:10px; 
+                    box-shadow:0 2px 5px rgba(0,0,0,0.1); margin-bottom:10px;">
+            <h3 style="color:#4B8BF5; text-align:center; margin:0;">
+                处理后视频
+            </h3>
+        </div>
+        """, unsafe_allow_html=True)
+    
     org_frame = col1.empty()  # 原始视频帧占位符
     ann_frame = col2.empty()  # 标注后的视频帧占位符
 
-    fps_display = st.sidebar.empty()  # FPS显示占位符
+    # 美化FPS显示
+    with st.sidebar:
+        st.markdown("""
+        <div style="background-color:white; padding:10px; border-radius:10px; 
+                    box-shadow:0 2px 5px rgba(0,0,0,0.1); margin-top:20px;">
+            <h4 style="color:#4B8BF5; text-align:center; margin:0;">性能监控</h4>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        fps_display = st.empty()
 
     # 修改播放逻辑，增加对demo_play模式的支持
     if st.sidebar.button("Start") or play_demo:
@@ -223,7 +430,29 @@ def inference(model=None):
                     st.error("Could not open webcam.")
 
                 # 停止按钮
-                stop_button = st.button("Stop")
+                # 美化停止按钮
+                stop_button_container = st.container()
+                with stop_button_container:
+                    stop_col1, stop_col2, stop_col3 = st.columns([1, 1, 1])
+                    with stop_col2:
+                        stop_button = st.button("停止播放", key="stop_button")
+                        
+                        # 添加按钮样式
+                        st.markdown("""
+                        <style>
+                            div[data-testid="stButton"] button[kind="secondary"] {
+                                background-color: #ff5252;
+                                color: white;
+                                border: none;
+                                padding: 8px 16px;
+                                font-weight: bold;
+                                width: 100%;
+                            }
+                            div[data-testid="stButton"] button[kind="secondary"]:hover {
+                                background-color: #ff3333;
+                            }
+                        </style>
+                        """, unsafe_allow_html=True)
 
                 # 主循环：逐帧处理视频
                 while videocapture.isOpened():
