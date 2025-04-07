@@ -62,10 +62,13 @@ def inference(model=None):
     # 视频源选择下拉框
     source = st.sidebar.selectbox(
         "Video",
-        ("webcam", "video"),  # 可选摄像头或上传视频文件
+        ("webcam", "video", "demo_play"),  # 新增演示播放选项
     )
 
-    vid_file_name = ""  # 初始化视频文件名变量
+    vid_file_name = ""
+    processed_video_path = None  # 存储处理后的视频路径
+    play_demo = False  # 新增：控制是否播放演示视频
+    
     if source == "video":
         # 视频文件上传器，支持mp4/mov/avi/mkv格式
         vid_file = st.sidebar.file_uploader("Upload Video File", type=["mp4", "mov", "avi", "mkv"])
@@ -77,6 +80,49 @@ def inference(model=None):
             vid_file_name = "ultralytics.mp4"  # 设置视频源为临时文件
     elif source == "webcam":
         vid_file_name = 0  # 0表示使用默认摄像头
+    elif source == "demo_play":
+        # 演示模式：上传原始视频，自动加载处理后的视频
+        st.sidebar.markdown("### 演示模式")
+        st.sidebar.markdown("上传原始视频，点击按钮后将自动加载处理后的视频并平行播放")
+        
+        # 上传原始视频
+        vid_file = st.sidebar.file_uploader("上传原始视频", type=["mp4", "mov", "avi", "mkv"])
+        if vid_file is not None:
+            # 保存原始视频
+            original_video_path = "original_video.mp4"
+            with open(original_video_path, "wb") as f:
+                f.write(vid_file.read())
+            vid_file_name = original_video_path
+            
+            # 添加"加载处理后视频"按钮
+            if st.sidebar.button("加载并播放"):
+                # 这里应该是预先约定好的处理后视频的路径
+                # 实际演示时，您需要确保这个路径下有对应的处理后视频
+                video_name = os.path.basename(vid_file.name)
+                base_name = os.path.splitext(video_name)[0]
+                
+                # 尝试在几个可能的位置查找处理后的视频
+                possible_paths = [
+                    f"processed_{base_name}.mp4",  # 以原文件名为基础
+                    f"A:/study/FuChuang/code/NpTZnOGYaGd-master/video/processed_{base_name}.mp4",  # 指定文件夹
+                    "demo_processed.mp4"  # 固定名称
+                ]
+                
+                # 查找第一个存在的处理后视频
+                for path in possible_paths:
+                    if os.path.exists(path):
+                        processed_video_path = path
+                        st.sidebar.success(f"已找到处理后视频: {path}")
+                        play_demo = True  # 设置为True，触发播放
+                        break
+                
+                if not processed_video_path:
+                    st.sidebar.error("未找到对应的处理后视频，请确保处理后视频已准备好")
+                    # 为了演示，可以提供一个默认的处理后视频
+                    if os.path.exists("demo_processed.mp4"):
+                        processed_video_path = "demo_processed.mp4"
+                        st.sidebar.info("已加载默认演示视频")
+                        play_demo = True  # 设置为True，触发播放
 
     # 模型选择下拉框
     available_models = [x.replace("yolo", "YOLO") for x in GITHUB_ASSETS_STEMS if x.startswith("yolo11")]
@@ -116,61 +162,113 @@ def inference(model=None):
 
     fps_display = st.sidebar.empty()  # FPS显示占位符
 
-    # 开始按钮
-    if st.sidebar.button("Start"):
-        # 初始化视频捕获
-        videocapture = cv2.VideoCapture(vid_file_name)
-
-        if not videocapture.isOpened():
-            st.error("Could not open webcam.")
-
-        # 停止按钮
-        stop_button = st.button("Stop")
-
-        # 主循环：逐帧处理视频
-        while videocapture.isOpened():
-            success, frame = videocapture.read()  # 读取一帧
-            if not success:
-                st.warning("Failed to read frame from webcam. Please make sure the webcam is connected properly.")
-                break
-
-            prev_time = time.time()  # 记录处理开始时间
-
-            # 模型推理
-            if enable_trk == "Yes":
-                # 启用跟踪模式
-                results = model.track(frame, conf=conf, iou=iou, classes=selected_ind, persist=True)
-            else:
-                # 普通检测模式
-                results = model(frame, conf=conf, iou=iou, classes=selected_ind)
+    # 修改播放逻辑，增加对demo_play模式的支持
+    if st.sidebar.button("Start") or play_demo:
+        if source == "demo_play" and processed_video_path and play_demo:
+            # 演示模式：平行播放原始视频和处理后视频
+            col1.header("原始视频")
+            col2.header("处理后视频")
             
-            # 在帧上绘制检测结果
-            annotated_frame = results[0].plot()
+            cap_original = cv2.VideoCapture(vid_file_name)
+            cap_processed = cv2.VideoCapture(processed_video_path)
+            
+            if not cap_original.isOpened() or not cap_processed.isOpened():
+                st.error("无法打开视频文件，请检查文件路径")
+            else:
+                # 获取视频帧率，确保同步播放
+                fps_original = cap_original.get(cv2.CAP_PROP_FPS)
+                fps_processed = cap_processed.get(cv2.CAP_PROP_FPS)
+                
+                # 使用较低的帧率确保同步
+                sync_fps = min(fps_original, fps_processed)
+                frame_time = 1.0 / sync_fps if sync_fps > 0 else 0.033  # 默认30fps
+                
+                stop_button = st.button("Stop")
+                
+                while cap_original.isOpened() and cap_processed.isOpened():
+                    start_time = time.time()
+                    
+                    ret1, frame1 = cap_original.read()
+                    ret2, frame2 = cap_processed.read()
+                    
+                    if not ret1 or not ret2:
+                        break
+                    
+                    # 显示原始帧和处理后帧
+                    org_frame.image(frame1, channels="BGR")
+                    ann_frame.image(frame2, channels="BGR")
+                    
+                    # 控制播放速度，确保同步
+                    processing_time = time.time() - start_time
+                    sleep_time = max(0, frame_time - processing_time)
+                    time.sleep(sleep_time)
+                    
+                    # 计算并显示FPS
+                    actual_fps = 1.0 / (time.time() - start_time)
+                    fps_display.metric("FPS", f"{actual_fps:.2f}")
+                    
+                    if stop_button:
+                        break
+                
+                cap_original.release()
+                cap_processed.release()
+        else:
+            # 原有的实时处理逻辑
+            # 开始按钮
+            if st.sidebar.button("Start"):
+                # 初始化视频捕获
+                videocapture = cv2.VideoCapture(vid_file_name)
 
-            # 计算FPS
-            curr_time = time.time()
-            fps = 1 / (curr_time - prev_time)
+                if not videocapture.isOpened():
+                    st.error("Could not open webcam.")
 
-            # 显示原始帧和标注帧
-            org_frame.image(frame, channels="BGR")
-            ann_frame.image(annotated_frame, channels="BGR")
+                # 停止按钮
+                stop_button = st.button("Stop")
 
-            # 如果点击停止按钮
-            if stop_button:
-                videocapture.release()  # 释放视频捕获
-                torch.cuda.empty_cache()  # 清空CUDA缓存
-                st.stop()  # 停止Streamlit应用
+                # 主循环：逐帧处理视频
+                while videocapture.isOpened():
+                    success, frame = videocapture.read()  # 读取一帧
+                    if not success:
+                        st.warning("Failed to read frame from webcam. Please make sure the webcam is connected properly.")
+                        break
 
-            # 更新FPS显示
-            fps_display.metric("FPS", f"{fps:.2f}")
+                    prev_time = time.time()  # 记录处理开始时间
 
-        # 循环结束后释放资源
-        videocapture.release()
+                    # 模型推理
+                    if enable_trk == "Yes":
+                        # 启用跟踪模式
+                        results = model.track(frame, conf=conf, iou=iou, classes=selected_ind, persist=True)
+                    else:
+                        # 普通检测模式
+                        results = model(frame, conf=conf, iou=iou, classes=selected_ind)
+                    
+                    # 在帧上绘制检测结果
+                    annotated_frame = results[0].plot()
 
-    # 清空CUDA缓存
-    torch.cuda.empty_cache()
-    # 销毁所有OpenCV窗口
-    cv2.destroyAllWindows()
+                    # 计算FPS
+                    curr_time = time.time()
+                    fps = 1 / (curr_time - prev_time)
+
+                    # 显示原始帧和标注帧
+                    org_frame.image(frame, channels="BGR")
+                    ann_frame.image(annotated_frame, channels="BGR")
+
+                    # 如果点击停止按钮
+                    if stop_button:
+                        videocapture.release()  # 释放视频捕获
+                        torch.cuda.empty_cache()  # 清空CUDA缓存
+                        st.stop()  # 停止Streamlit应用
+
+                    # 更新FPS显示
+                    fps_display.metric("FPS", f"{fps:.2f}")
+
+                # 循环结束后释放资源
+                videocapture.release()
+
+            # 清空CUDA缓存
+            torch.cuda.empty_cache()
+            # 销毁所有OpenCV窗口
+            cv2.destroyAllWindows()
 
 
 # 主程序入口
