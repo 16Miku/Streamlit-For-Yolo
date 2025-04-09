@@ -15,6 +15,9 @@ os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 from ultralytics.utils.checks import check_requirements  # 检查依赖包是否安装
 from ultralytics.utils.downloads import GITHUB_ASSETS_STEMS  # 获取GitHub上的模型资源
 
+# 导入自定义工具函数
+from utils.common import apply_custom_style, set_page_config, add_sidebar_header
+
 
 def inference(model=None):
     """
@@ -28,18 +31,13 @@ def inference(model=None):
     
     from ultralytics import YOLO  # 导入YOLO模型类
 
-    # 美化Streamlit应用界面方案
-    # 针对您的Streamlit应用，我提供以下美化方案，主要从标题样式、布局、颜色主题、交互元素和视觉效果等方面进行优化：
+    # 设置页面配置
+    set_page_config("智能视频分析系统 - 目标检测")
     
-    ## 1. 标题和主题优化
-    # 隐藏Streamlit默认菜单的CSS样式
-    menu_style_cfg = """<style>
-        MainMenu {visibility: hidden;}
-        footer {visibility: hidden;}
-        #header {visibility: hidden;}
-    </style>"""
-    
-    # 主标题的HTML样式配置
+    # 应用自定义样式
+    apply_custom_style()
+
+    # 应用自定义HTML样式
     main_title_cfg = """
     <div>
         <h1 style="color:#4B8BF5; text-align:center; font-size:42px; 
@@ -49,7 +47,6 @@ def inference(model=None):
         </h1>
     </div>"""
     
-    # 副标题的HTML样式配置
     sub_title_cfg = """
     <div>
         <h4 style="color:#555555; text-align:center; font-family: 'Arial', sans-serif; 
@@ -58,107 +55,11 @@ def inference(model=None):
         </h4>
     </div>"""
 
-    # 设置Streamlit页面配置
-    st.set_page_config(
-        page_title="智能视频分析系统", 
-        layout="wide", 
-        initial_sidebar_state="auto",
-        page_icon="🎯"
-    )
-
-    # 应用全局CSS样式
-    global_css = """
-    <style>
-        /* 全局字体和背景 */
-        body {
-            font-family: 'Arial', sans-serif;
-            background-color: #f5f7fa;
-        }
-        
-        /* 侧边栏样式 */
-        .css-1d391kg {
-            background-color: #f0f2f6;
-        }
-        
-        /* 按钮样式 */
-        .stButton>button {
-            background-color: #4B8BF5;
-            color: white;
-            border-radius: 5px;
-            border: none;
-            padding: 8px 16px;
-            font-weight: bold;
-            transition: all 0.3s ease;
-        }
-        .stButton>button:hover {
-            background-color: #3a7ad5;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-        }
-        
-        /* 滑块样式 */
-        .stSlider>div>div>div {
-            background-color: #4B8BF5;
-        }
-
-
-        /* 滑块两端数字背景样式 */
-        .stSlider .st-eb {
-            background-color: #4B8BF5 !important;
-            color: white !important;
-            border-radius: 4px !important;
-            padding: 2px 4px !important;
-        }
-        
-        /* 卡片样式 */
-        .stBlock {
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            padding: 20px;
-            background-color: white;
-        }
-        
-        /* 视频框样式 */
-        .stImage {
-            border-radius: 8px;
-            border: 1px solid #e0e0e0;
-        }
-        
-        /* 标题样式 */
-        h1, h2, h3, h4 {
-            color: #333;
-        }
-    </style>
-    """
-    st.markdown(global_css, unsafe_allow_html=True)
-
-    # 应用自定义HTML样式
-    st.markdown(menu_style_cfg, unsafe_allow_html=True)
     st.markdown(main_title_cfg, unsafe_allow_html=True)
     st.markdown(sub_title_cfg, unsafe_allow_html=True)
 
-    # 在侧边栏添加自定义logo
-    with st.sidebar:
-        # 可以替换为您自己的logo
-        # logo = "https://raw.githubusercontent.com/ultralytics/assets/main/logo/Ultralytics_Logotype_Original.svg"
-        logo = r"B:\images\like\dfb598baf82a0c1917d2c855856683c81759312887.jpg"
-        
-        st.image(logo, width=200)
-        
-        # 添加分隔线
-        st.markdown("<hr style='margin-top:0; margin-bottom:20px; border:none; height:1px; background-color:#e0e0e0;'>", unsafe_allow_html=True)
-        
-        # 侧边栏标题样式 - 修改为汪汪队立大功主题
-        st.markdown("""
-        <div style="text-align:center;">
-            <h3 style="color:#FF6B6B; margin-bottom:10px; font-family:'Comic Sans MS', cursive; 
-                text-shadow: 1px 1px 2px #FFD166;">
-                🐾 汪汪队立大功 🐾
-            </h3>
-            <p style="color:#118AB2; font-size:14px; font-style:italic; margin-top:0;">
-                随时待命，随叫随到！
-            </p>
-        </div>
-        """, unsafe_allow_html=True)
+    # 添加侧边栏头部
+    add_sidebar_header()
 
     # 侧边栏用户配置区域
     st.sidebar.title("用户配置")
@@ -166,15 +67,16 @@ def inference(model=None):
     # 视频源选择下拉框
     source = st.sidebar.selectbox(
         "视频源选择",
-        ("webcam", "video", "demo_play"),  # 新增演示播放选项
+        ("webcam", "video", "demo_play"),  # 三种视频源选项
     )
 
+    # 以下是原有代码，保持不变
     vid_file_name = ""
     processed_video_path = None  # 存储处理后的视频路径
-    play_demo = False  # 新增：控制是否播放演示视频
+    play_demo = False  # 控制是否播放演示视频
     
     if source == "video":
-        # 视频文件上传器，支持mp4/mov/avi/mkv格式
+        # 视频文件上传器
         vid_file = st.sidebar.file_uploader("Upload Video File", type=["mp4", "mov", "avi", "mkv"])
         if vid_file is not None:
             g = io.BytesIO(vid_file.read())  # 将上传文件读取为字节流
