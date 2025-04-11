@@ -23,6 +23,48 @@
    - 在侧边栏以指标卡形式展示
    - 数值实时更新，便于监控处理效果
 
+### 图像对比功能
+
+新增图像对比页面，提供以下功能：
+
+1. **交互式图像对比**：
+   - 通过左右拖动分界线直观对比处理前后的图像效果
+   - 支持上传自定义图像进行对比分析
+
+2. **多种对比模式**：
+   - 原始图像与处理后图像对比
+   - 不同处理算法效果对比
+   - 不同参数设置效果对比
+
+### 视频对比功能
+
+新增视频对比页面，提供以下功能：
+
+1. **实时视频对比**：
+   - 同步播放原始视频和处理后视频
+   - 通过拖动分界线直观对比处理前后的视频效果
+
+2. **视频源选择**：
+   - 支持上传自定义视频
+   - 提供演示模式快速体验
+
+### 效果对比分析
+
+新增效果对比分析页面，提供以下功能：
+
+1. **性能指标可视化**：
+   - 读取CSV格式的性能数据
+   - 提供折线图、柱状图等多种可视化方式
+   - 支持多指标对比分析
+
+2. **数据编辑与导出**：
+   - 支持在线编辑数据
+   - 提供数据下载功能
+
+3. **统计分析**：
+   - 自动计算各项指标的统计信息
+   - 提供相关性分析功能
+
 ## 系统架构
 
 系统由以下几个主要模块组成：
@@ -31,7 +73,10 @@
 2. **去烟处理页面** - 视频烟雾去除功能（含性能监控）
 3. **模态配准页面** - 多模态视频配准功能
 4. **数据分析页面** - 处理结果可视化与统计
-5. **公共工具** - 共享函数和样式
+5. **图像对比页面** - 处理前后图像效果对比
+6. **视频对比页面** - 处理前后视频效果对比
+7. **效果对比页面** - 基于性能指标的效果分析
+8. **公共工具** - 共享函数和样式
 
 ## 功能模块详解
 
@@ -70,7 +115,6 @@ def inference(model=None):
         # 演示模式：上传原始视频，自动加载处理后的视频
 ```
 
-
 ### 2. 去烟处理页面 (pages/1_去烟处理.py)
 
 去烟处理页面实现了视频烟雾去除功能，支持以下特性：
@@ -79,6 +123,7 @@ def inference(model=None):
 - 自动查找和加载处理后的视频
 - 原始视频和去烟后视频的对比显示
 - 去烟强度参数调整
+- 生成性能对比CSV文件功能
 
 #### 核心功能代码解读
 
@@ -105,6 +150,28 @@ if uploaded_file is not None:
                 st.sidebar.success(f"成功加载处理后视频")
                 play_demo = True  # 设置为True，触发播放
                 break
+
+# 生成CSV文件按钮
+generate_csv_col1, generate_csv_col2 = st.columns([1, 1])
+with generate_csv_col1:
+    if st.button("生成性能对比CSV文件"):
+        # 创建性能数据
+        frames = 100  # 假设有100帧
+        data = {
+            'Frame': list(range(1, frames + 1)),
+            'Entropy(bits)': np.random.uniform(5.0, 7.0, frames),
+            'Avg_Gradient': np.random.uniform(10.0, 30.0, frames),
+            'PSNR': np.random.uniform(25.0, 35.0, frames),
+            'SSIM': np.random.uniform(0.7, 0.95, frames),
+            'Processing_Time(ms)': np.random.uniform(20.0, 50.0, frames)
+        }
+        
+        # 保存CSV文件
+        os.makedirs("perform monitor", exist_ok=True)
+        df = pd.DataFrame(data)
+        df.to_csv("perform monitor/performance_metrics.csv", index=False)
+        
+        st.success("已生成CSV文件，可在效果对比页面查看详细分析")
 ```
 
 ### 3. 模态配准页面 (pages/2_模态配准.py)
@@ -150,113 +217,99 @@ if source == "上传视频":
             ]
 ```
 
-### 4. 数据分析页面 (pages/3_数据分析.py)
+### 4. 图像对比页面 (pages/4_图像对比.py)
 
-数据分析页面实现了处理结果的可视化与统计功能，支持以下特性：
+图像对比页面提供了处理前后图像的直观对比功能，支持以下特性：
 
-- 演示数据自动生成
-- 支持CSV文件上传
-- 多种可视化图表（柱状图、折线图、散点图、饼图、热力图）
-- 数据统计与分析
-- 结果导出为CSV
-
-#### 核心功能代码解读
-
-```python
-# 生成演示数据函数
-def generate_demo_data():
-    """生成演示用的数据集"""
-    # 目标检测数据
-    detection_data = {
-        '时间戳': pd.date_range(start='2023-01-01', periods=100, freq='H'),
-        '检测目标': np.random.choice(['人', '车', '动物', '烟雾', '火焰'], 100),
-        '置信度': np.random.uniform(0.5, 1.0, 100).round(2),
-        '处理时间(ms)': np.random.randint(20, 100, 100),
-        '位置_x': np.random.randint(0, 1920, 100),
-        '位置_y': np.random.randint(0, 1080, 100),
-        '视频源': np.random.choice(['摄像头1', '摄像头2', '上传视频'], 100)
-    }
-    
-    # 返回包含各类数据的字典
-    return {
-        '目标检测': pd.DataFrame(detection_data),
-        '去烟处理': pd.DataFrame(smoke_removal_data),
-        '模态配准': pd.DataFrame(registration_data)
-    }
-
-### 4. 公共工具 (utils/common.py)
-
-公共工具模块提供了共享函数和样式，用于统一各页面的外观和行为：
-
-- 自定义样式应用
-- 页面配置设置
-- 侧边栏头部添加
+- 上传原始图像和处理后图像
+- 通过拖动分界线直观对比处理效果
+- 支持多种图像格式
+- 提供演示模式快速体验
 
 #### 核心功能代码解读
 
 ```python
-def apply_custom_style():
-    """应用自定义样式到Streamlit应用"""
-    # 隐藏Streamlit默认菜单的CSS样式
-    menu_style_cfg = """<style>
-        MainMenu {visibility: hidden;}
-        footer {visibility: hidden;}
-        #header {visibility: hidden;}
-    </style>"""
-    
-    # 全局CSS样式
-    global_css = """
-    <style>
-        /* 全局字体和背景 */
-        body {
-            font-family: 'Arial', sans-serif;
-            background-color: #f5f7fa;
-        }
-        
-        /* 其他样式... */
-    </style>
-    """
-    
-    st.markdown(menu_style_cfg, unsafe_allow_html=True)
-    st.markdown(global_css, unsafe_allow_html=True)
-
-def set_page_config(title="智能视频分析系统"):
-    """设置页面配置"""
-    st.set_page_config(
-        page_title=title, 
-        layout="wide", 
-        initial_sidebar_state="auto",
-        page_icon="🎯"
-    )
-
-def add_sidebar_header():
-    """添加侧边栏头部"""
-    with st.sidebar:
-        # 添加logo和样式
-        logo = r"B:\images\like\dfb598baf82a0c1917d2c855856683c81759312887.jpg"
-        if os.path.exists(logo):
-            st.image(logo, width=80)
-        st.markdown("<h2 style='text-align: center; color: #4B8BF5;'>智能视频分析</h2>", unsafe_allow_html=True)
+# 图像对比组件
+image_comparison(
+    img1=original_image,
+    img2=processed_image,
+    label1="原始图像",
+    label2="处理后图像",
+    width=700
+)
 ```
 
-## 技术栈
+### 5. 视频对比页面 (pages/5_视频对比.py)
 
-本项目使用了以下技术和库：
+视频对比页面提供了处理前后视频的实时对比功能，支持以下特性：
 
-1. **前端框架**：
-   - Streamlit - 用于构建Web界面
+- 上传原始视频和处理后视频
+- 同步播放两个视频
+- 通过拖动分界线直观对比处理效果
+- 支持多种视频格式
+- 提供演示模式快速体验
 
-2. **深度学习框架**：
-   - PyTorch - 深度学习框架
-   - Ultralytics YOLO - 目标检测模型
+#### 核心功能代码解读
 
-3. **图像处理**：
-   - OpenCV - 视频捕获和图像处理
-   - NumPy - 数值计算
+```python
+# 使用image_comparison组件进行帧对比
+image_comparison(
+    img1=cv2.cvtColor(frame1, cv2.COLOR_BGR2RGB),
+    img2=cv2.cvtColor(frame2, cv2.COLOR_BGR2RGB),
+    label1="处理前",
+    label2="处理后",
+    width=700
+)
 
-4. **其他工具**：
-   - Python 3.8+ - 编程语言
-   - YAML - 配置文件
+# 控制播放速度，确保同步
+processing_time = time.time() - start_time
+sleep_time = max(0, frame_time - processing_time)
+time.sleep(sleep_time)
+```
+
+### 6. 效果对比页面 (pages/6_效果对比.py)
+
+效果对比页面提供了基于性能指标的视频处理效果分析功能，支持以下特性：
+
+- 读取CSV格式的性能数据
+- 多种可视化方式展示性能指标
+- 支持数据编辑和导出
+- 提供统计分析和相关性分析
+
+#### 核心功能代码解读
+
+```python
+# 数据可视化
+st.subheader("性能指标可视化")
+
+# 选择要可视化的指标
+metrics = df.columns.tolist()
+if 'Frame' in metrics:
+    metrics.remove('Frame')  # 移除帧索引列
+
+selected_metrics = st.multiselect(
+    "选择要可视化的指标",
+    metrics,
+    default=metrics[:2] if len(metrics) >= 2 else metrics
+)
+
+if selected_metrics:
+    # 创建折线图
+    fig, ax = plt.subplots(figsize=(10, 6))
+    
+    for metric in selected_metrics:
+        ax.plot(df['Frame'] if 'Frame' in df.columns else df.index, 
+                df[metric], 
+                label=metric)
+    
+    ax.set_xlabel('帧')
+    ax.set_ylabel('指标值')
+    ax.set_title('视频处理性能指标')
+    ax.legend()
+    ax.grid(True)
+    
+    st.pyplot(fig)
+```
 
 ## 项目结构
 
@@ -266,10 +319,16 @@ NpTZnOGYaGd-master/
 ├── pages/                  # 多页面应用
 │   ├── 1_去烟处理.py        # 去烟处理页面
 │   ├── 2_模态配准.py        # 模态配准页面
-│   └── 3_数据分析.py        # 数据分析页面
+│   ├── 3_数据分析.py        # 数据分析页面
+│   ├── 4_图像对比.py        # 图像对比页面
+│   ├── 5_视频对比.py        # 视频对比页面
+│   └── 6_效果对比.py        # 效果对比页面
 ├── utils/                  # 工具函数
 │   └── common.py           # 共享函数和样式
 ├── video/                  # 视频文件目录
+├── perform monitor/        # 性能监控数据目录
+│   ├── performance_metrics.csv  # 性能指标数据
+│   └── raw_image_metrics.csv    # 原始图像指标数据
 ├── wuxi.yaml               # YOLO模型配置
 └── pyproject.toml          # 项目依赖配置
 ```
@@ -278,10 +337,10 @@ NpTZnOGYaGd-master/
 
 ### 安装依赖
 
-首先，确保您已安装Python 3.8或更高版本，然后运行以下命令安装所需依赖：
+首先，确保您已安装Python 3.8或更高版本，然后安装所需依赖：
 
 ```bash
-pip install -r requirements.txt
+pip install streamlit opencv-python numpy pandas matplotlib ultralytics streamlit-image-comparison
 ```
 
 ### 运行应用
@@ -302,27 +361,18 @@ streamlit run app.py
    - 点击"加载并播放"按钮
    - 调整去烟强度参数
    - 对比原始视频和去烟后视频
+   - 点击"生成性能对比CSV文件"按钮生成性能数据
 
-3. **模态配准**：
-   - 选择视频源（上传视频或演示模式）
-   - 上传原始视频
-   - 点击"加载并播放"按钮
-   - 调整配准方法和精度参数
-   - 对比原始视频和配准后视频
+3. **图像对比**：
+   - 上传原始图像和处理后图像
+   - 通过拖动分界线对比处理效果
 
-## 开发者指南
+4. **视频对比**：
+   - 上传原始视频和处理后视频
+   - 观看同步播放的视频对比效果
 
-### 添加新功能
-
-1. 在 `pages/` 目录下创建新的页面文件
-2. 导入必要的库和公共工具
-3. 设置页面配置和样式
-4. 实现功能逻辑
-
-### 修改样式
-
-修改 `utils/common.py` 中的 `apply_custom_style()` 函数来更新全局样式。
-
-## 许可证
-
-本项目使用 AGPL-3.0 许可证。详情请参阅 [Ultralytics 许可证](https://ultralytics.com/license)。
+5. **效果对比分析**：
+   - 选择CSV格式的性能数据文件
+   - 选择要可视化的性能指标
+   - 查看各种图表和统计分析结果
+```
