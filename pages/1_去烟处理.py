@@ -8,6 +8,7 @@ from ultralytics import YOLO
 import sys
 sys.path.append("a:/study/FuChuang/code/NpTZnOGYaGd-master")
 from utils.common import apply_custom_style, set_page_config, add_sidebar_header
+import pandas as pd
 
 # 设置页面
 set_page_config("智能视频分析系统 - 去烟处理")
@@ -137,6 +138,25 @@ with st.sidebar:
     """, unsafe_allow_html=True)
     
     fps_display = st.empty()
+    entropy_display = st.empty()
+    gradient_display = st.empty()
+
+# 读取性能监控数据
+raw_metrics_path = "a:/study/FuChuang/code/NpTZnOGYaGd-master/perform monitor/raw_image_metrics.csv"
+raw_metrics_data = pd.read_csv(raw_metrics_path)
+
+# 美化FPS显示
+with st.sidebar:
+    st.markdown("""
+    <div style="background-color:white; padding:10px; border-radius:10px; 
+                box-shadow:0 2px 5px rgba(0,0,0,0.1); margin-top:20px;">
+        <h4 style="color:#4B8BF5; text-align:center; margin:0;">性能监控</h4>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    fps_display = st.empty()
+    entropy_display = st.empty()
+    gradient_display = st.empty()
 
 # 播放逻辑
 if play_demo and vid_file_name and processed_video_path:
@@ -157,6 +177,7 @@ if play_demo and vid_file_name and processed_video_path:
         
         stop_button = st.button("停止播放")
         
+        frame_index = 0
         while cap_original.isOpened() and cap_processed.isOpened():
             start_time = time.time()
             
@@ -178,6 +199,13 @@ if play_demo and vid_file_name and processed_video_path:
             # 计算并显示FPS
             actual_fps = 1.0 / (time.time() - start_time)
             fps_display.metric("FPS", f"{actual_fps:.2f}")
+            
+            # 显示性能监控数据
+            if frame_index < len(raw_metrics_data):
+                row = raw_metrics_data.iloc[frame_index]
+                entropy_display.metric("信息熵", f"{row['Entropy(bits)']:.2f}")
+                gradient_display.metric("平均梯度", f"{row['Avg_Gradient']:.2f}")
+                frame_index += 1
             
             if stop_button:
                 break
