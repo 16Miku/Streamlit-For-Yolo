@@ -130,8 +130,8 @@ def add_sidebar_navigation(current_page):
     # 获取当前页面的索引
     pages = {
         "人体识别": 0,
-        "去烟处理": 1,
-        "去烟效果对比": 1,  # 使用相同的索引，表示它是去烟处理的子页面
+        "图像去烟": 1,
+        "去烟效果对比": 1,  # 使用相同的索引，表示它是图像去烟的子页面
         "去烟性能可视化": 1,  # 新增性能可视化子页面
         "模态配准": 2,
         "数据分析": 3,
@@ -163,10 +163,10 @@ def add_sidebar_navigation(current_page):
         </div>
         """, unsafe_allow_html=True)
         
-        # 修改导航菜单处理逻辑部分
+        # 使用option_menu创建导航菜单，修改样式为浅蓝色
         selected = option_menu(
             menu_title="功能导航",
-            options=["人体识别", "去烟处理", "模态配准", "数据分析", "图像对比", "视频对比"],
+            options=["人体识别", "图像去烟", "模态配准", "数据分析", "图像对比", "视频对比"],
             icons=["house", "cloud-haze2", "layers", "graph-up", "images", "film"],
             menu_icon="list",
             default_index=default_index if current_page not in ["去烟效果对比", "去烟性能可视化"] else 1,  # 如果是子页面，高亮父页面
@@ -191,8 +191,8 @@ def add_sidebar_navigation(current_page):
             }
         )
         
-        # 如果选择了去烟处理，显示子菜单
-        if selected == "去烟处理" or current_page in ["去烟处理", "去烟效果对比", "去烟性能可视化"]:
+        # 如果选择了图像去烟，显示子菜单
+        if selected == "图像去烟" or current_page in ["图像去烟", "去烟效果对比", "去烟性能可视化"]:
             st.markdown("""
             <style>
             div[data-testid="stVerticalBlock"] div[data-testid="stVerticalBlock"] {
@@ -207,8 +207,8 @@ def add_sidebar_navigation(current_page):
             # 创建子菜单，修改样式，添加性能可视化选项
             submenu = st.radio(
                 "去烟处理功能",
-                ["去烟处理", "去烟效果对比", "性能可视化"],
-                index=0 if current_page == "去烟处理" else (1 if current_page == "去烟效果对比" else 2),
+                ["图像去烟", "去烟效果对比", "性能可视化"],
+                index=0 if current_page == "图像去烟" else (1 if current_page == "去烟效果对比" else 2),
                 horizontal=True,
                 key="desmoke_submenu"
             )
@@ -233,17 +233,17 @@ def add_sidebar_navigation(current_page):
             """, unsafe_allow_html=True)
             
             # 根据子菜单选择重定向
-            if submenu == "去烟处理" and current_page != "去烟处理":
+            if submenu == "图像去烟" and current_page != "图像去烟":
                 st.switch_page("pages/1_去烟处理.py")
             elif submenu == "去烟效果对比" and current_page != "去烟效果对比":
                 st.switch_page("pages/6_效果对比.py")
             elif submenu == "性能可视化" and current_page != "去烟性能可视化":
                 st.switch_page("pages/7_性能可视化.py")
         
-        # 处理主菜单页面跳转 - 修改这部分代码
+        # 处理主菜单页面跳转
         if selected == "人体识别" and current_page not in ["人体识别"]:
             st.switch_page("app.py")
-        elif selected == "去烟处理" and current_page not in ["去烟处理", "去烟效果对比", "去烟性能可视化"]:
+        elif selected == "图像去烟" and current_page not in ["图像去烟", "去烟效果对比", "去烟性能可视化"]:
             st.switch_page("pages/1_去烟处理.py")
         elif selected == "模态配准" and current_page != "模态配准":
             st.switch_page("pages/2_模态配准.py")

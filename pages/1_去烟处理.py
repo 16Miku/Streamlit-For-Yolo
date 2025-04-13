@@ -11,7 +11,7 @@ from utils.common import apply_custom_style, add_sidebar_navigation
 import pandas as pd
 
 # 设置页面
-st.set_page_config(page_title="智能视频分析系统 - 去烟处理", layout="wide")
+st.set_page_config(page_title="智能视频分析系统 - 图像去烟", layout="wide")
 apply_custom_style()
 
 # 页面标题
@@ -20,7 +20,7 @@ st.markdown("""
     <h1 style="color:#4B8BF5; text-align:center; font-size:42px; 
         font-family: 'Arial', sans-serif; margin-top:-30px; margin-bottom:10px; 
         text-shadow: 2px 2px 4px rgba(0,0,0,0.1);">
-            智能视频去烟处理
+            智能图像去烟处理
     </h1>
 </div>
 <div>
@@ -32,7 +32,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # 添加侧边栏导航，替换原来的add_sidebar_header()
-add_sidebar_navigation("去烟处理")
+add_sidebar_navigation("图像去烟")
 
 # 侧边栏配置
 st.sidebar.title("去烟参数设置")
