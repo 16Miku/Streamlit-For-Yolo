@@ -106,11 +106,11 @@ def add_sidebar_header():
     """添加侧边栏头部"""
     with st.sidebar:
         # 可以替换为您自己的logo
-        logo = r"B:\images\like\dfb598baf82a0c1917d2c855856683c81759312887.jpg"
-        st.image(logo, width=200)
+        # logo = r"B:\images\like\dfb598baf82a0c1917d2c855856683c81759312887.jpg"
+        # st.image(logo, width=200)
         
         # 添加分隔线
-        st.markdown("<hr style='margin-top:0; margin-bottom:20px; border:none; height:1px; background-color:#e0e0e0;'>", unsafe_allow_html=True)
+        # st.markdown("<hr style='margin-top:0; margin-bottom:20px; border:none; height:1px; background-color:#e0e0e0;'>", unsafe_allow_html=True)
         
         # 侧边栏标题样式 - 汪汪队立大功主题
         st.markdown("""
@@ -144,11 +144,11 @@ def add_sidebar_navigation(current_page):
     
     with st.sidebar:
         # 添加logo
-        logo = r"B:\images\like\dfb598baf82a0c1917d2c855856683c81759312887.jpg"
-        st.image(logo, width=200)
+        # logo = r"B:\images\like\dfb598baf82a0c1917d2c855856683c81759312887.jpg"
+        # st.image(logo, width=200)
         
         # 添加分隔线
-        st.markdown("<hr style='margin-top:0; margin-bottom:20px; border:none; height:1px; background-color:#e0e0e0;'>", unsafe_allow_html=True)
+        # st.markdown("<hr style='margin-top:0; margin-bottom:20px; border:none; height:1px; background-color:#e0e0e0;'>", unsafe_allow_html=True)
         
         # 侧边栏标题样式
         st.markdown("""

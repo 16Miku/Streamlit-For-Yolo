@@ -476,7 +476,7 @@ if __name__ == "__main__":
     add_sidebar_navigation("人体识别")
     
     # 模型加载提示
-    st.success("模型加载成功！")
+    # st.success("模型加载成功！")
     
     # 调用主函数
     inference()
