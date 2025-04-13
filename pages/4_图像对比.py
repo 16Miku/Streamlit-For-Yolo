@@ -1,4 +1,4 @@
-# 图像对比页面
+# 图像对比页面 - 图像去烟的子模块
 import streamlit as st
 import cv2
 import numpy as np

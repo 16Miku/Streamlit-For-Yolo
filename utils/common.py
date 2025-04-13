@@ -133,11 +133,11 @@ def add_sidebar_navigation(current_page):
         "图像去烟": 1,
         "去烟效果对比": 1,  # 使用相同的索引，表示它是图像去烟的子页面
         "去烟性能可视化": 1,  # 新增性能可视化子页面
+        "图像对比": 1,  # 修改为与图像去烟相同的索引，表示它是图像去烟的子模块
         "模态对齐与融合模块": 2,
         "数据分析": 3,
-        "图像对比": 4,
-        # "视频对比": 5,
-        "效果对比": 5
+        # "视频对比": 5,  # 已注释掉
+        "效果对比": 4  # 索引调整为4
     }
     
     default_index = pages.get(current_page, 0)
@@ -166,10 +166,10 @@ def add_sidebar_navigation(current_page):
         # 使用option_menu创建导航菜单，修改样式为浅蓝色
         selected = option_menu(
             menu_title="功能导航",
-            options=["人体识别", "图像去烟", "模态对齐与融合模块", "数据分析", "图像对比"],
-            icons=["house", "cloud-haze2", "layers", "graph-up", "images"],
+            options=["人体识别", "图像去烟", "模态对齐与融合模块", "数据分析"],  # 移除"图像对比"选项
+            icons=["house", "cloud-haze2", "layers", "graph-up"],  # 相应调整图标
             menu_icon="list",
-            default_index=default_index if current_page not in ["去烟效果对比", "去烟性能可视化"] else 1,  # 如果是子页面，高亮父页面
+            default_index=default_index if current_page not in ["去烟效果对比", "去烟性能可视化", "图像对比"] else 1,  # 如果是子页面，高亮父页面
             styles={
                 "container": {"padding": "0!important", "background-color": "#f0f7ff"},  # 修改为浅蓝色背景
                 "icon": {"color": "#4B8BF5", "font-size": "18px"},  # 修改图标颜色为蓝色
@@ -192,7 +192,7 @@ def add_sidebar_navigation(current_page):
         )
         
         # 如果选择了图像去烟，显示子菜单
-        if selected == "图像去烟" or current_page in ["图像去烟", "去烟效果对比", "去烟性能可视化"]:
+        if selected == "图像去烟" or current_page in ["图像去烟", "去烟效果对比", "去烟性能可视化", "图像对比"]:
             st.markdown("""
             <style>
             div[data-testid="stVerticalBlock"] div[data-testid="stVerticalBlock"] {
@@ -204,11 +204,13 @@ def add_sidebar_navigation(current_page):
             </style>
             """, unsafe_allow_html=True)
             
-            # 创建子菜单，修改样式，添加性能可视化选项
+            # 创建子菜单，修改样式，添加图像对比选项
             submenu = st.radio(
                 "去烟处理功能",
-                ["图像去烟", "去烟效果对比", "性能可视化"],
-                index=0 if current_page == "图像去烟" else (1 if current_page == "去烟效果对比" else 2),
+                ["图像去烟", "去烟效果对比", "性能可视化", "图像对比"],  # 添加"图像对比"选项
+                index=0 if current_page == "图像去烟" else 
+                      (1 if current_page == "去烟效果对比" else 
+                       (2 if current_page == "去烟性能可视化" else 3)),  # 调整索引逻辑
                 horizontal=True,
                 key="desmoke_submenu"
             )
@@ -239,15 +241,15 @@ def add_sidebar_navigation(current_page):
                 st.switch_page("pages/6_效果对比.py")
             elif submenu == "性能可视化" and current_page != "去烟性能可视化":
                 st.switch_page("pages/7_性能可视化.py")
+            elif submenu == "图像对比" and current_page != "图像对比":
+                st.switch_page("pages/4_图像对比.py")
         
         # 处理主菜单页面跳转
         if selected == "人体识别" and current_page not in ["人体识别"]:
             st.switch_page("app.py")
-        elif selected == "图像去烟" and current_page not in ["图像去烟", "去烟效果对比", "去烟性能可视化"]:
+        elif selected == "图像去烟" and current_page not in ["图像去烟", "去烟效果对比", "去烟性能可视化", "图像对比"]:
             st.switch_page("pages/1_去烟处理.py")
         elif selected == "模态对齐与融合模块" and current_page != "模态对齐与融合模块":
             st.switch_page("pages/2_模态配准.py")
         elif selected == "数据分析" and current_page != "数据分析":
             st.switch_page("pages/3_数据分析.py")
-        elif selected == "图像对比" and current_page != "图像对比":
-            st.switch_page("pages/4_图像对比.py")
