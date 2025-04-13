@@ -16,7 +16,7 @@ from queue import Queue  # 添加队列支持
 sys.path.append("a:/study/FuChuang/code/NpTZnOGYaGd-master")
 
 # 设置页面配置 - 必须是第一个Streamlit命令
-st.set_page_config(page_title="智能视频分析系统 - 目标检测", layout="wide", page_icon="🎯")
+st.set_page_config(page_title="智能视频分析系统 - 人体识别", layout="wide", page_icon="🎯")
 
 # 设置环境变量，解决OpenMP库冲突问题
 os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
@@ -64,7 +64,7 @@ def inference(model=None):
     <div>
         <h4 style="color:#555555; text-align:center; font-family: 'Arial', sans-serif; 
             margin-top:-5px; margin-bottom:30px; font-weight:300;">
-            基于深度学习的视频目标检测与分析
+            基于深度学习的视频人体识别与分析
         </h4>
     </div>
     """, unsafe_allow_html=True)
@@ -473,7 +473,7 @@ def inference(model=None):
 # 主程序入口
 if __name__ == "__main__":
     # 添加侧边栏导航 - 使用唯一的key参数
-    add_sidebar_navigation("目标检测")
+    add_sidebar_navigation("人体识别")
     
     # 模型加载提示
     st.success("模型加载成功！")

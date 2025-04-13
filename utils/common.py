@@ -129,7 +129,7 @@ def add_sidebar_navigation(current_page):
     """添加侧边栏导航菜单，高亮当前页面"""
     # 获取当前页面的索引
     pages = {
-        "目标检测": 0,
+        "人体识别": 0,
         "去烟处理": 1,
         "去烟效果对比": 1,  # 使用相同的索引，表示它是去烟处理的子页面
         "去烟性能可视化": 1,  # 新增性能可视化子页面
@@ -163,10 +163,10 @@ def add_sidebar_navigation(current_page):
         </div>
         """, unsafe_allow_html=True)
         
-        # 使用option_menu创建导航菜单，修改样式为浅蓝色
+        # 修改导航菜单处理逻辑部分
         selected = option_menu(
             menu_title="功能导航",
-            options=["目标检测", "去烟处理", "模态配准", "数据分析", "图像对比", "视频对比"],
+            options=["人体识别", "去烟处理", "模态配准", "数据分析", "图像对比", "视频对比"],
             icons=["house", "cloud-haze2", "layers", "graph-up", "images", "film"],
             menu_icon="list",
             default_index=default_index if current_page not in ["去烟效果对比", "去烟性能可视化"] else 1,  # 如果是子页面，高亮父页面
@@ -240,8 +240,8 @@ def add_sidebar_navigation(current_page):
             elif submenu == "性能可视化" and current_page != "去烟性能可视化":
                 st.switch_page("pages/7_性能可视化.py")
         
-        # 处理主菜单页面跳转
-        if selected == "目标检测" and current_page not in ["目标检测"]:
+        # 处理主菜单页面跳转 - 修改这部分代码
+        if selected == "人体识别" and current_page not in ["人体识别"]:
             st.switch_page("app.py")
         elif selected == "去烟处理" and current_page not in ["去烟处理", "去烟效果对比", "去烟性能可视化"]:
             st.switch_page("pages/1_去烟处理.py")
