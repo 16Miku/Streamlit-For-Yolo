@@ -9,7 +9,7 @@ sys.path.append("a:/study/FuChuang/code/NpTZnOGYaGd-master")
 from utils.common import apply_custom_style, add_sidebar_navigation
 
 # 设置页面
-st.set_page_config(page_title="智能视频分析系统 - 模态配准", layout="wide")
+st.set_page_config(page_title="智能视频分析系统 - 模态对齐与融合模块", layout="wide")
 apply_custom_style()
 
 # 页面标题
@@ -18,19 +18,19 @@ st.markdown("""
     <h1 style="color:#4B8BF5; text-align:center; font-size:42px; 
         font-family: 'Arial', sans-serif; margin-top:-30px; margin-bottom:10px; 
         text-shadow: 2px 2px 4px rgba(0,0,0,0.1);">
-            多模态视频配准
+            模态对齐与融合模块
     </h1>
 </div>
 <div>
     <h4 style="color:#555555; text-align:center; font-family: 'Arial', sans-serif; 
         margin-top:-5px; margin-bottom:30px; font-weight:300;">
-        基于特征匹配的多模态视频配准技术
+        基于特征匹配的多模态视频配准与融合技术
     </h4>
 </div>
 """, unsafe_allow_html=True)
 
 # 添加侧边栏导航，替换原来的add_sidebar_header()
-add_sidebar_navigation("模态配准")
+add_sidebar_navigation("模态对齐与融合模块")
 
 # 侧边栏配置
 st.sidebar.title("配准参数设置")

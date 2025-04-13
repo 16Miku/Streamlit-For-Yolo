@@ -133,7 +133,7 @@ def add_sidebar_navigation(current_page):
         "图像去烟": 1,
         "去烟效果对比": 1,  # 使用相同的索引，表示它是图像去烟的子页面
         "去烟性能可视化": 1,  # 新增性能可视化子页面
-        "模态配准": 2,
+        "模态对齐与融合模块": 2,
         "数据分析": 3,
         "图像对比": 4,
         "视频对比": 5,
@@ -166,7 +166,7 @@ def add_sidebar_navigation(current_page):
         # 使用option_menu创建导航菜单，修改样式为浅蓝色
         selected = option_menu(
             menu_title="功能导航",
-            options=["人体识别", "图像去烟", "模态配准", "数据分析", "图像对比", "视频对比"],
+            options=["人体识别", "图像去烟", "模态对齐与融合模块", "数据分析", "图像对比", "视频对比"],
             icons=["house", "cloud-haze2", "layers", "graph-up", "images", "film"],
             menu_icon="list",
             default_index=default_index if current_page not in ["去烟效果对比", "去烟性能可视化"] else 1,  # 如果是子页面，高亮父页面
@@ -245,7 +245,7 @@ def add_sidebar_navigation(current_page):
             st.switch_page("app.py")
         elif selected == "图像去烟" and current_page not in ["图像去烟", "去烟效果对比", "去烟性能可视化"]:
             st.switch_page("pages/1_去烟处理.py")
-        elif selected == "模态配准" and current_page != "模态配准":
+        elif selected == "模态对齐与融合模块" and current_page != "模态对齐与融合模块":
             st.switch_page("pages/2_模态配准.py")
         elif selected == "数据分析" and current_page != "数据分析":
             st.switch_page("pages/3_数据分析.py")
