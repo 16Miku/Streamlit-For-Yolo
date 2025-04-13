@@ -3,13 +3,13 @@ import streamlit as st
 import cv2
 import numpy as np
 import os
-import sys
 from streamlit_image_comparison import image_comparison
+import sys
 sys.path.append("a:/study/FuChuang/code/NpTZnOGYaGd-master")
-from utils.common import apply_custom_style, set_page_config, add_sidebar_header
+from utils.common import apply_custom_style, add_sidebar_navigation
 
 # 设置页面
-set_page_config("智能视频分析系统 - 图像对比")
+st.set_page_config(page_title="智能视频分析系统 - 图像对比", layout="wide")
 apply_custom_style()
 
 # 页面标题
@@ -24,13 +24,13 @@ st.markdown("""
 <div>
     <h4 style="color:#555555; text-align:center; font-family: 'Arial', sans-serif; 
         margin-top:-5px; margin-bottom:30px; font-weight:300;">
-        通过左右拖动分界线查看处理前后的图像效果
+        基于交互式界面的图像处理效果对比
     </h4>
 </div>
 """, unsafe_allow_html=True)
 
-# 添加侧边栏
-add_sidebar_header()
+# 添加侧边栏导航，替换原来的add_sidebar_header()
+add_sidebar_navigation("图像对比")
 
 # 侧边栏配置
 st.sidebar.title("图像对比设置")

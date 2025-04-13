@@ -7,11 +7,11 @@ import os
 from ultralytics import YOLO
 import sys
 sys.path.append("a:/study/FuChuang/code/NpTZnOGYaGd-master")
-from utils.common import apply_custom_style, set_page_config, add_sidebar_header
+from utils.common import apply_custom_style, add_sidebar_navigation
 import pandas as pd
 
 # 设置页面
-set_page_config("智能视频分析系统 - 去烟处理")
+st.set_page_config(page_title="智能视频分析系统 - 去烟处理", layout="wide")
 apply_custom_style()
 
 # 页面标题
@@ -31,8 +31,8 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# 添加侧边栏
-add_sidebar_header()
+# 添加侧边栏导航，替换原来的add_sidebar_header()
+add_sidebar_navigation("去烟处理")
 
 # 侧边栏配置
 st.sidebar.title("去烟参数设置")
@@ -240,3 +240,20 @@ with st.sidebar:
             cap_processed.release()
             
             # 删除这里的按钮代码，因为我们已经将它移到了外面
+            # 在页面底部添加链接到效果对比页面
+            st.markdown("""
+            <div style="text-align:center; margin-top:30px; padding:10px; background-color:#f0f7ff; border-radius:5px;">
+                <p>查看详细的<a href="/6_效果对比" target="_self">去烟效果对比分析</a></p>
+            </div>
+            """, unsafe_allow_html=True)
+            # 在页面底部添加链接到性能可视化页面和效果对比页面
+            st.markdown("""
+            <div style="display: flex; justify-content: space-around; margin-top:30px;">
+                <div style="text-align:center; padding:10px; background-color:#e6f2ff; border-radius:5px; width:45%;">
+                    <p>查看详细的<a href="/6_效果对比" target="_self">去烟效果对比分析</a></p>
+                </div>
+                <div style="text-align:center; padding:10px; background-color:#e6f2ff; border-radius:5px; width:45%;">
+                    <p>查看实时<a href="/7_性能可视化" target="_self">去烟性能可视化</a></p>
+                </div>
+            </div>
+            """, unsafe_allow_html=True)

@@ -1,0 +1,8 @@
+[ui]
+hideSidebarNav = true
+
+[theme]
+primaryColor = "#4B8BF5"
+backgroundColor = "#f5f7fa"
+secondaryBackgroundColor = "#f0f2f6"
+textColor = "#333333"

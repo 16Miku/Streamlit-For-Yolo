@@ -1,3 +1,4 @@
+
 # 智能视频分析系统
 
 ## 项目概述
@@ -5,6 +6,22 @@
 本项目是一个基于深度学习的智能视频分析系统，主要功能包括目标检测、去烟处理、多模态视频配准和数据分析。系统采用Streamlit构建Web界面，使用YOLO模型进行目标检测，并提供了友好的用户交互体验。该系统适用于安防监控、工业检测和视频处理等多种场景。
 
 ## 新增功能
+
+### 性能优化模块
+
+在主页面中新增了性能优化模块，主要特性包括：
+
+1. **多线程处理**：
+   - 使用线程分离视频读取和模型推理，避免UI阻塞
+   - 使用队列实现线程间的帧传递，提高处理效率
+
+2. **帧处理优化**：
+   - 实现帧跳过机制，可调节跳帧率提高显示流畅度
+   - 支持多种处理分辨率选择，平衡性能和质量
+
+3. **性能监控**：
+   - 实时FPS显示，直观反映系统性能
+   - 优化的FPS计算方法，更准确反映实际帧率
 
 ### 性能监控模块
 
@@ -43,6 +60,7 @@
 1. **实时视频对比**：
    - 同步播放原始视频和处理后视频
    - 通过拖动分界线直观对比处理前后的视频效果
+   - 优化的帧处理机制，提高播放流畅度
 
 2. **视频源选择**：
    - 支持上传自定义视频
@@ -69,14 +87,15 @@
 
 系统由以下几个主要模块组成：
 
-1. **主页面** - 目标检测功能
+1. **主页面** - 目标检测功能（含性能优化）
 2. **去烟处理页面** - 视频烟雾去除功能（含性能监控）
 3. **模态配准页面** - 多模态视频配准功能
 4. **数据分析页面** - 处理结果可视化与统计
 5. **图像对比页面** - 处理前后图像效果对比
 6. **视频对比页面** - 处理前后视频效果对比
 7. **效果对比页面** - 基于性能指标的效果分析
-8. **公共工具** - 共享函数和样式
+8. **性能可视化页面** - 系统性能监控与分析
+9. **公共工具** - 共享函数和样式
 
 ## 功能模块详解
 
@@ -89,6 +108,8 @@
 - 检测结果可视化
 - 性能监控（FPS显示）
 - 支持多种检测参数调整（置信度阈值、IOU阈值等）
+- 多线程处理和帧缓冲机制
+- 可调节的跳帧率和处理分辨率
 
 #### 核心功能代码解读
 
@@ -106,13 +127,39 @@ def inference(model=None):
         ("webcam", "video", "demo_play"),
     )
     
-    # 根据不同视频源处理视频
-    if source == "video":
-        # 处理上传的视频文件
-    elif source == "webcam":
-        # 使用摄像头
-    elif source == "demo_play":
-        # 演示模式：上传原始视频，自动加载处理后的视频
+    # 性能设置
+    st.sidebar.markdown("### 性能设置")
+    frame_size = st.sidebar.selectbox(
+        "处理分辨率", 
+        [
+            "原始分辨率",
+            "640x480 (推荐)",
+            "320x240 (高速)"
+        ],
+        index=1
+    )
+    
+    # 添加跳帧设置
+    skip_frames = st.sidebar.slider("跳帧率", 0, 5, 1, 
+                                   help="每隔多少帧处理一帧，提高值可提升流畅度")
+    
+    # 多线程处理
+    def process_frames():
+        while True:
+            if frame_buffer.empty():
+                time.sleep(0.01)
+                continue
+                
+            frame = frame_buffer.get()
+            if frame is None:
+                break
+                
+            # 模型推理
+            results = model(frame, conf=conf, iou=iou, classes=selected_ind)
+            
+            # 在帧上绘制检测结果
+            annotated_frame = results[0].plot()
+            result_buffer.put((frame, annotated_frame))
 ```
 
 ### 2. 去烟处理页面 (pages/1_去烟处理.py)
@@ -248,23 +295,45 @@ image_comparison(
 - 通过拖动分界线直观对比处理效果
 - 支持多种视频格式
 - 提供演示模式快速体验
+- 优化的帧处理机制，提高播放流畅度
 
 #### 核心功能代码解读
 
 ```python
-# 使用image_comparison组件进行帧对比
-image_comparison(
-    img1=cv2.cvtColor(frame1, cv2.COLOR_BGR2RGB),
-    img2=cv2.cvtColor(frame2, cv2.COLOR_BGR2RGB),
-    label1="处理前",
-    label2="处理后",
-    width=700
-)
+# 添加帧率控制选项
+skip_frames = st.sidebar.slider("跳帧率", 0, 5, 1, help="每隔多少帧显示一帧，提高值可提升流畅度")
+frame_count = 0
 
-# 控制播放速度，确保同步
-processing_time = time.time() - start_time
-sleep_time = max(0, frame_time - processing_time)
-time.sleep(sleep_time)
+while cap_original.isOpened() and cap_processed.isOpened():
+    start_time = time.time()
+    
+    ret1, frame1 = cap_original.read()
+    ret2, frame2 = cap_processed.read()
+    
+    if not ret1 or not ret2:
+        break
+    
+    # 帧跳过机制
+    frame_count += 1
+    if frame_count % (skip_frames + 1) != 0:
+        continue
+    
+    # 调整帧大小以提高性能
+    frame1 = process_frame(frame1)
+    frame2 = process_frame(frame2)
+    
+    # 使用image_comparison组件进行帧对比
+    image_comparison(
+        img1=cv2.cvtColor(frame1, cv2.COLOR_BGR2RGB),
+        img2=cv2.cvtColor(frame2, cv2.COLOR_BGR2RGB),
+        label1="处理前",
+        label2="处理后",
+        width=700
+    )
+    
+    # 计算并显示FPS
+    actual_fps = 1.0 / (time.time() - start_time)
+    fps_display.metric("FPS", f"{actual_fps:.2f}")
 ```
 
 ### 6. 效果对比页面 (pages/6_效果对比.py)
@@ -311,6 +380,15 @@ if selected_metrics:
     st.pyplot(fig)
 ```
 
+### 7. 性能可视化页面 (pages/7_性能可视化.py)
+
+性能可视化页面提供了系统性能监控与分析功能，支持以下特性：
+
+- 实时系统资源监控（CPU、内存使用率）
+- 处理性能指标可视化（FPS、延迟）
+- 性能瓶颈分析
+- 不同配置下的性能对比
+
 ## 项目结构
 
 ```
@@ -322,7 +400,8 @@ NpTZnOGYaGd-master/
 │   ├── 3_数据分析.py        # 数据分析页面
 │   ├── 4_图像对比.py        # 图像对比页面
 │   ├── 5_视频对比.py        # 视频对比页面
-│   └── 6_效果对比.py        # 效果对比页面
+│   ├── 6_效果对比.py        # 效果对比页面
+│   └── 7_性能可视化.py      # 性能可视化页面
 ├── utils/                  # 工具函数
 │   └── common.py           # 共享函数和样式
 ├── video/                  # 视频文件目录
@@ -353,7 +432,7 @@ streamlit run app.py
 
 1. **目标检测**：
    - 选择视频源（摄像头、上传视频或演示模式）
-   - 调整检测参数
+   - 调整检测参数和性能设置（处理分辨率、跳帧率）
    - 查看实时检测结果
 
 2. **去烟处理**：
@@ -369,10 +448,16 @@ streamlit run app.py
 
 4. **视频对比**：
    - 上传原始视频和处理后视频
+   - 调整跳帧率优化播放流畅度
    - 观看同步播放的视频对比效果
 
 5. **效果对比分析**：
    - 选择CSV格式的性能数据文件
    - 选择要可视化的性能指标
    - 查看各种图表和统计分析结果
+
+6. **性能可视化**：
+   - 查看系统资源使用情况
+   - 分析处理性能指标
+   - 对比不同配置下的系统性能
 ```

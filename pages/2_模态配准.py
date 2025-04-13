@@ -4,13 +4,12 @@ import cv2
 import numpy as np
 import time
 import os
-import io
 import sys
 sys.path.append("a:/study/FuChuang/code/NpTZnOGYaGd-master")
-from utils.common import apply_custom_style, set_page_config, add_sidebar_header
+from utils.common import apply_custom_style, add_sidebar_navigation
 
 # 设置页面
-set_page_config("智能视频分析系统 - 模态配准")
+st.set_page_config(page_title="智能视频分析系统 - 模态配准", layout="wide")
 apply_custom_style()
 
 # 页面标题
@@ -25,13 +24,13 @@ st.markdown("""
 <div>
     <h4 style="color:#555555; text-align:center; font-family: 'Arial', sans-serif; 
         margin-top:-5px; margin-bottom:30px; font-weight:300;">
-        精确对齐不同模态的视频数据
+        基于特征匹配的多模态视频配准技术
     </h4>
 </div>
 """, unsafe_allow_html=True)
 
-# 添加侧边栏
-add_sidebar_header()
+# 添加侧边栏导航，替换原来的add_sidebar_header()
+add_sidebar_navigation("模态配准")
 
 # 侧边栏配置
 st.sidebar.title("配准参数设置")

@@ -2,11 +2,21 @@
 # 声明代码使用AGPL-3.0许可证
 
 # 导入必要的库
+# 在导入部分添加线程支持
 import io  # 用于处理字节流
 import time  # 用于时间计算和FPS测量
 import cv2  # OpenCV库，用于视频捕获和图像处理
 import torch  # PyTorch深度学习框架
 import os  # 操作系统接口，用于环境变量设置
+import streamlit as st  # 导入Streamlit库用于构建Web界面
+import sys
+import numpy as np
+import threading  # 添加线程支持
+from queue import Queue  # 添加队列支持
+sys.path.append("a:/study/FuChuang/code/NpTZnOGYaGd-master")
+
+# 设置页面配置 - 必须是第一个Streamlit命令
+st.set_page_config(page_title="智能视频分析系统 - 目标检测", layout="wide", page_icon="🎯")
 
 # 设置环境变量，解决OpenMP库冲突问题
 os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
@@ -14,10 +24,24 @@ os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 # 从ultralytics工具包导入必要的功能
 from ultralytics.utils.checks import check_requirements  # 检查依赖包是否安装
 from ultralytics.utils.downloads import GITHUB_ASSETS_STEMS  # 获取GitHub上的模型资源
+from ultralytics import YOLO  # 导入YOLO模型类
 
 # 导入自定义工具函数
-from utils.common import apply_custom_style, set_page_config, add_sidebar_header
+from utils.common import apply_custom_style, add_sidebar_navigation
 
+# 应用自定义样式
+apply_custom_style()
+
+# 添加帧处理函数
+def process_frame(frame, target_size=(640, 480)):
+    """
+    处理视频帧，调整大小以提高性能
+    """
+    if frame is None:
+        return None
+    
+    # 调整帧大小以提高性能
+    return cv2.resize(frame, target_size)
 
 def inference(model=None):
     """
@@ -27,72 +51,81 @@ def inference(model=None):
     """
     # 检查并确保streamlit已安装，版本>=1.29.0
     check_requirements("streamlit>=1.29.0")
-    import streamlit as st  # 导入Streamlit库用于构建Web界面
     
-    from ultralytics import YOLO  # 导入YOLO模型类
-
-    # 设置页面配置
-    set_page_config("智能视频分析系统 - 目标检测")
-    
-    # 应用自定义样式
-    apply_custom_style()
-
-    # 应用自定义HTML样式
-    main_title_cfg = """
+    # 页面标题
+    st.markdown("""
     <div>
         <h1 style="color:#4B8BF5; text-align:center; font-size:42px; 
             font-family: 'Arial', sans-serif; margin-top:-30px; margin-bottom:10px; 
             text-shadow: 2px 2px 4px rgba(0,0,0,0.1);">
                 智能视频分析系统
         </h1>
-    </div>"""
-    
-    sub_title_cfg = """
+    </div>
     <div>
         <h4 style="color:#555555; text-align:center; font-family: 'Arial', sans-serif; 
             margin-top:-5px; margin-bottom:30px; font-weight:300;">
-            基于YOLO的实时目标检测与分析平台
+            基于深度学习的视频目标检测与分析
         </h4>
-    </div>"""
-
-    st.markdown(main_title_cfg, unsafe_allow_html=True)
-    st.markdown(sub_title_cfg, unsafe_allow_html=True)
-
-    # 添加侧边栏头部
-    add_sidebar_header()
-
-    # 侧边栏用户配置区域
-    st.sidebar.title("用户配置")
-
-    # 视频源选择下拉框
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # 创建两列布局
+    col1, col2 = st.columns(2)
+    
+    # 添加视频区域标题
+    with col1:
+        st.markdown("""
+        <div style="background-color:white; padding:10px; border-radius:10px; 
+                    box-shadow:0 2px 5px rgba(0,0,0,0.1); margin-bottom:10px;">
+            <h3 style="color:#4B8BF5; text-align:center; margin:0;">
+                原始视频
+            </h3>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col2:
+        st.markdown("""
+        <div style="background-color:white; padding:10px; border-radius:10px; 
+                    box-shadow:0 2px 5px rgba(0,0,0,0.1); margin-bottom:10px;">
+            <h3 style="color:#4B8BF5; text-align:center; margin:0;">
+                处理后视频
+            </h3>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    # 视频帧占位符
+    org_frame = col1.empty()
+    ann_frame = col2.empty()
+    
+    # 侧边栏配置
+    st.sidebar.title("检测参数设置")
+    
+    # 视频源选择
     source = st.sidebar.selectbox(
         "视频源选择",
-        ("webcam", "video", "demo_play"),  # 三种视频源选项
+        ("webcam", "video", "demo_play"),
     )
-
-    # 以下是原有代码，保持不变
-    vid_file_name = ""
-    processed_video_path = None  # 存储处理后的视频路径
-    play_demo = False  # 控制是否播放演示视频
     
+    # 初始化变量
+    vid_file_name = None
+    processed_video_path = None
+    play_demo = False
+    
+    # 根据不同视频源处理视频
     if source == "video":
         # 视频文件上传器
-        vid_file = st.sidebar.file_uploader("Upload Video File", type=["mp4", "mov", "avi", "mkv"])
+        vid_file = st.sidebar.file_uploader("上传视频文件", type=["mp4", "mov", "avi", "mkv"], key="video_uploader")
         if vid_file is not None:
-            g = io.BytesIO(vid_file.read())  # 将上传文件读取为字节流
-            vid_location = "ultralytics.mp4"  # 临时保存文件名
-            with open(vid_location, "wb") as out:  # 将字节流写入临时文件
-                out.write(g.read())
-            vid_file_name = "ultralytics.mp4"  # 设置视频源为临时文件
+            # 保存上传的视频
+            vid_file_name = "uploaded_video.mp4"
+            with open(vid_file_name, "wb") as f:
+                f.write(vid_file.read())
     elif source == "webcam":
+        # 使用摄像头
         vid_file_name = 0  # 0表示使用默认摄像头
     elif source == "demo_play":
         # 演示模式：上传原始视频，自动加载处理后的视频
-        # st.sidebar.markdown("### 演示模式")
-        # st.sidebar.markdown("上传原始视频，点击按钮后将自动加载处理后的视频并平行播放")
-        
-        # 上传原始视频
-        vid_file = st.sidebar.file_uploader("上传原始视频", type=["mp4", "mov", "avi", "mkv"])
+        vid_file = st.sidebar.file_uploader("上传原始视频", type=["mp4", "mov", "avi"], key="demo_uploader")
         if vid_file is not None:
             # 保存原始视频
             original_video_path = "original_video.mp4"
@@ -131,7 +164,7 @@ def inference(model=None):
                         play_demo = True  # 设置为True，触发播放
 
     # 模型选择下拉框
-    available_models = [x.replace("yolo", "YOLO") for x in GITHUB_ASSETS_STEMS if x.startswith("yolo11")]
+    available_models = [x.replace("yolo", "YOLO") for x in GITHUB_ASSETS_STEMS if x.startswith("yolo")]
     if model:
         # 如果有预加载模型，添加到可选模型列表首位
         available_models.insert(0, model.split(".pt")[0])
@@ -200,28 +233,12 @@ def inference(model=None):
             help="控制重叠框的过滤程度，较高的值会减少重复检测"
         ))
     with iou_col2:
-        # 使用st.markdown创建自定义HTML/CSS样式的数值显示框
-        # f-string用于将Python变量(iou)动态插入到HTML中
         st.markdown(f"""
         <div style="background-color:transparent; padding:8px; border-radius:5px; 
                     text-align:center; margin-top:23px; border:1px dashed #d0d0d0;">
-            <!-- 样式设计：
-                - background-color:transparent：设置透明背景
-                - padding:8px：内边距为8像素，使内容不会贴近边缘
-                - border-radius:5px：圆角边框，美化显示效果
-                - text-align:center：文本居中对齐
-                - margin-top:23px：上边距23像素，与滑块垂直对齐
-                - border:1px dashed #d0d0d0：添加虚线边框，在透明背景下提供视觉边界
-            -->
             <span style="font-weight:bold; color:#4B8BF5;">{iou:.2f}</span>
-            <!-- 
-                数值显示：
-                - font-weight:bold：文字加粗，增强可读性
-                - color:#4B8BF5：使用蓝色(#4B8BF5)显示数值，与应用整体色调一致
-                - {iou:.2f}：格式化IoU值，保留两位小数
-            -->
         </div>
-        """, unsafe_allow_html=True)  # unsafe_allow_html=True允许渲染HTML
+        """, unsafe_allow_html=True)
     
     # 添加参数说明提示
     st.sidebar.markdown("""
@@ -232,33 +249,6 @@ def inference(model=None):
         </p>
     </div>
     """, unsafe_allow_html=True)
-
-    # 创建两列布局并美化
-    col1, col2 = st.columns(2)
-    
-    # 添加视频区域标题和边框
-    with col1:
-        st.markdown("""
-        <div style="background-color:white; padding:10px; border-radius:10px; 
-                    box-shadow:0 2px 5px rgba(0,0,0,0.1); margin-bottom:10px;">
-            <h3 style="color:#4B8BF5; text-align:center; margin:0;">
-                原始视频
-            </h3>
-        </div>
-        """, unsafe_allow_html=True)
-    
-    with col2:
-        st.markdown("""
-        <div style="background-color:white; padding:10px; border-radius:10px; 
-                    box-shadow:0 2px 5px rgba(0,0,0,0.1); margin-bottom:10px;">
-            <h3 style="color:#4B8BF5; text-align:center; margin:0;">
-                处理后视频
-            </h3>
-        </div>
-        """, unsafe_allow_html=True)
-    
-    org_frame = col1.empty()  # 原始视频帧占位符
-    ann_frame = col2.empty()  # 标注后的视频帧占位符
 
     # 美化FPS显示
     with st.sidebar:
@@ -275,9 +265,6 @@ def inference(model=None):
     if st.sidebar.button("Start") or play_demo:
         if source == "demo_play" and processed_video_path and play_demo:
             # 演示模式：平行播放原始视频和处理后视频
-            col1.header("原始视频")
-            col2.header("处理后视频")
-            
             cap_original = cv2.VideoCapture(vid_file_name)
             cap_processed = cv2.VideoCapture(processed_video_path)
             
@@ -292,7 +279,11 @@ def inference(model=None):
                 sync_fps = min(fps_original, fps_processed)
                 frame_time = 1.0 / sync_fps if sync_fps > 0 else 0.033  # 默认30fps
                 
-                stop_button = st.button("Stop")
+                stop_button = st.button("Stop", key="stop_demo_button")
+                
+                # 添加帧率控制选项
+                skip_frames = st.sidebar.slider("跳帧率", 0, 5, 1, help="每隔多少帧显示一帧，提高值可提升流畅度")
+                frame_count = 0
                 
                 while cap_original.isOpened() and cap_processed.isOpened():
                     start_time = time.time()
@@ -303,14 +294,23 @@ def inference(model=None):
                     if not ret1 or not ret2:
                         break
                     
+                    # 帧跳过机制
+                    frame_count += 1
+                    if frame_count % (skip_frames + 1) != 0:
+                        continue
+                    
+                    # 调整帧大小以提高性能
+                    frame1 = process_frame(frame1)
+                    frame2 = process_frame(frame2)
+                    
                     # 显示原始帧和处理后帧
                     org_frame.image(frame1, channels="BGR")
                     ann_frame.image(frame2, channels="BGR")
                     
-                    # 控制播放速度，确保同步
-                    processing_time = time.time() - start_time
-                    sleep_time = max(0, frame_time - processing_time)
-                    time.sleep(sleep_time)
+                    # 移除延迟机制，让系统以最快速度处理
+                    # processing_time = time.time() - start_time
+                    # sleep_time = max(0, frame_time - processing_time)
+                    # time.sleep(sleep_time)
                     
                     # 计算并显示FPS
                     actual_fps = 1.0 / (time.time() - start_time)
@@ -323,14 +323,12 @@ def inference(model=None):
                 cap_processed.release()
         else:
             # 原有的实时处理逻辑
-            # 开始按钮
-            if st.sidebar.button("Start"):
-                # 初始化视频捕获
-                videocapture = cv2.VideoCapture(vid_file_name)
+            # 初始化视频捕获
+            videocapture = cv2.VideoCapture(vid_file_name)
 
-                if not videocapture.isOpened():
-                    st.error("Could not open webcam.")
-
+            if not videocapture.isOpened():
+                st.error("Could not open webcam.")
+            else:
                 # 停止按钮
                 # 美化停止按钮
                 stop_button_container = st.container()
@@ -357,41 +355,111 @@ def inference(model=None):
                         """, unsafe_allow_html=True)
 
                 # 主循环：逐帧处理视频
+                # 添加性能设置
+                st.sidebar.markdown("### 性能设置")
+                frame_size = st.sidebar.selectbox(
+                    "处理分辨率", 
+                    [
+                        "原始分辨率",
+                        "640x480 (推荐)",
+                        "320x240 (高速)"
+                    ],
+                    index=1
+                )
+                
+                # 添加跳帧设置
+                skip_frames = st.sidebar.slider("跳帧率", 0, 5, 1, help="每隔多少帧处理一帧，提高值可提升流畅度")
+                
+                # 设置目标尺寸
+                if frame_size == "原始分辨率":
+                    target_size = None
+                elif frame_size == "320x240 (高速)":
+                    target_size = (320, 240)
+                else:
+                    target_size = (640, 480)
+                
+                # 帧计数器
+                frame_count = 0
+                # 初始化时间变量
+                prev_time = time.time()
+                
+                # 创建帧缓冲区
+                frame_buffer = Queue(maxsize=5)
+                result_buffer = Queue(maxsize=5)
+                
+                # 定义处理线程函数
+                def process_frames():
+                    while True:
+                        if frame_buffer.empty():
+                            time.sleep(0.01)
+                            continue
+                            
+                        frame = frame_buffer.get()
+                        if frame is None:
+                            break
+                            
+                        # 模型推理
+                        if enable_trk == "Yes":
+                            # 启用跟踪模式
+                            results = model.track(frame, conf=conf, iou=iou, classes=selected_ind, persist=True)
+                        else:
+                            # 普通检测模式
+                            results = model(frame, conf=conf, iou=iou, classes=selected_ind)
+                        
+                        # 在帧上绘制检测结果
+                        annotated_frame = results[0].plot()
+                        result_buffer.put((frame, annotated_frame))
+                
+                # 启动处理线程
+                processing_thread = threading.Thread(target=process_frames)
+                processing_thread.daemon = True
+                processing_thread.start()
+                
                 while videocapture.isOpened():
                     success, frame = videocapture.read()  # 读取一帧
                     if not success:
                         st.warning("Failed to read frame from webcam. Please make sure the webcam is connected properly.")
                         break
-
-                    prev_time = time.time()  # 记录处理开始时间
-
-                    # 模型推理
-                    if enable_trk == "Yes":
-                        # 启用跟踪模式
-                        results = model.track(frame, conf=conf, iou=iou, classes=selected_ind, persist=True)
-                    else:
-                        # 普通检测模式
-                        results = model(frame, conf=conf, iou=iou, classes=selected_ind)
                     
-                    # 在帧上绘制检测结果
-                    annotated_frame = results[0].plot()
-
-                    # 计算FPS
-                    curr_time = time.time()
-                    fps = 1 / (curr_time - prev_time)
-
-                    # 显示原始帧和标注帧
+                    # 帧跳过机制
+                    frame_count += 1
+                    if frame_count % (skip_frames + 1) != 0:
+                        continue
+                    
+                    # 调整帧大小以提高性能
+                    if target_size:
+                        frame = cv2.resize(frame, target_size)
+                    
+                    # 将帧放入缓冲区
+                    if not frame_buffer.full():
+                        frame_buffer.put(frame.copy())
+                    
+                    # 显示原始帧
                     org_frame.image(frame, channels="BGR")
-                    ann_frame.image(annotated_frame, channels="BGR")
-
+                    
+                    # 如果有处理结果，显示处理后的帧
+                    if not result_buffer.empty():
+                        _, annotated_frame = result_buffer.get()
+                        ann_frame.image(annotated_frame, channels="BGR")
+                        
+                        # 计算并显示FPS
+                        curr_time = time.time()
+                        fps = frame_count / (curr_time - prev_time) if curr_time > prev_time else 0
+                        fps_display.metric("FPS", f"{fps:.2f}")
+                    
                     # 如果点击停止按钮
                     if stop_button:
+                        # 停止处理线程
+                        frame_buffer.put(None)
+                        processing_thread.join(timeout=1.0)
+                        
                         videocapture.release()  # 释放视频捕获
                         torch.cuda.empty_cache()  # 清空CUDA缓存
                         st.stop()  # 停止Streamlit应用
-
-                    # 更新FPS显示
-                    fps_display.metric("FPS", f"{fps:.2f}")
+                
+                # 停止处理线程
+                frame_buffer.put(None)
+                processing_thread.join(timeout=1.0)
 
                 # 循环结束后释放资源
                 videocapture.release()
@@ -404,4 +472,11 @@ def inference(model=None):
 
 # 主程序入口
 if __name__ == "__main__":
-    inference()  # 调用主函数
+    # 添加侧边栏导航 - 使用唯一的key参数
+    add_sidebar_navigation("目标检测")
+    
+    # 模型加载提示
+    st.success("模型加载成功！")
+    
+    # 调用主函数
+    inference()

@@ -3,14 +3,13 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-import seaborn as sns
 import os
 import sys
 sys.path.append("a:/study/FuChuang/code/NpTZnOGYaGd-master")
-from utils.common import apply_custom_style, set_page_config, add_sidebar_header
+from utils.common import apply_custom_style, add_sidebar_navigation
 
 # 设置页面
-set_page_config("智能视频分析系统 - 数据分析")
+st.set_page_config(page_title="智能视频分析系统 - 数据分析", layout="wide")
 apply_custom_style()
 
 # 页面标题
@@ -19,19 +18,19 @@ st.markdown("""
     <h1 style="color:#4B8BF5; text-align:center; font-size:42px; 
         font-family: 'Arial', sans-serif; margin-top:-30px; margin-bottom:10px; 
         text-shadow: 2px 2px 4px rgba(0,0,0,0.1);">
-            视频分析数据统计
+            视频数据分析
     </h1>
 </div>
 <div>
     <h4 style="color:#555555; text-align:center; font-family: 'Arial', sans-serif; 
         margin-top:-5px; margin-bottom:30px; font-weight:300;">
-        可视化展示检测结果与处理效果
+        基于统计学的视频数据分析与可视化
     </h4>
 </div>
 """, unsafe_allow_html=True)
 
-# 添加侧边栏
-add_sidebar_header()
+# 添加侧边栏导航，替换原来的add_sidebar_header()
+add_sidebar_navigation("数据分析")
 
 # 侧边栏配置
 st.sidebar.title("数据分析参数")
