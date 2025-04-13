@@ -136,8 +136,8 @@ def add_sidebar_navigation(current_page):
         "模态对齐与融合模块": 2,
         "数据分析": 3,
         "图像对比": 4,
-        "视频对比": 5,
-        "效果对比": 6
+        # "视频对比": 5,
+        "效果对比": 5
     }
     
     default_index = pages.get(current_page, 0)
@@ -166,8 +166,8 @@ def add_sidebar_navigation(current_page):
         # 使用option_menu创建导航菜单，修改样式为浅蓝色
         selected = option_menu(
             menu_title="功能导航",
-            options=["人体识别", "图像去烟", "模态对齐与融合模块", "数据分析", "图像对比", "视频对比"],
-            icons=["house", "cloud-haze2", "layers", "graph-up", "images", "film"],
+            options=["人体识别", "图像去烟", "模态对齐与融合模块", "数据分析", "图像对比"],
+            icons=["house", "cloud-haze2", "layers", "graph-up", "images"],
             menu_icon="list",
             default_index=default_index if current_page not in ["去烟效果对比", "去烟性能可视化"] else 1,  # 如果是子页面，高亮父页面
             styles={
@@ -251,5 +251,3 @@ def add_sidebar_navigation(current_page):
             st.switch_page("pages/3_数据分析.py")
         elif selected == "图像对比" and current_page != "图像对比":
             st.switch_page("pages/4_图像对比.py")
-        elif selected == "视频对比" and current_page != "视频对比":
-            st.switch_page("pages/5_视频对比.py")
