@@ -162,34 +162,22 @@ def inference(model=None):
                         processed_video_path = "demo_processed.mp4"
                         st.sidebar.info("已加载默认演示视频")
                         play_demo = True  # 设置为True，触发播放
-
-    # 模型选择下拉框
-    available_models = [x.replace("yolo", "YOLO") for x in GITHUB_ASSETS_STEMS if x.startswith("yolo")]
-    if model:
-        # 如果有预加载模型，添加到可选模型列表首位
-        available_models.insert(0, model.split(".pt")[0])
-
-    # 显示模型选择下拉框
-    selected_model = st.sidebar.selectbox("Model", available_models)
+    # 在侧边栏显示当前使用的模型
+    st.sidebar.markdown("""
+    <div style="background-color:#f0f7ff; padding:10px; border-radius:5px; margin-bottom:10px;">
+        <p style="color:#4B8BF5; font-size:14px; margin:0;">
+            当前使用模型: <strong>YOLO12n</strong>
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
     
-    # 加载所选YOLO模型
-    with st.spinner("Model is downloading..."):
-        model = YOLO(f"{selected_model.lower()}.pt")  # 加载模型
-        class_names = list(model.names.values())  # 获取模型支持的类别名称列表
-    st.success("Model loaded successfully!")  # 显示加载成功消息
+    # 加载YOLOv12模型
+    with st.spinner("正在加载模型..."):
+        model = YOLO("yolo12n.pt")  # 加载模型
+    st.success("模型加载成功！")  # 显示加载成功消息
 
-    # 类别多选框，默认选择前3个类别
-    selected_classes = st.sidebar.multiselect("Classes", class_names, default=class_names[:3])
-    # 将选择的类别名称转换为对应的索引
-    selected_ind = [class_names.index(option) for option in selected_classes]
-
-    # 确保selected_ind是列表类型
-    if not isinstance(selected_ind, list):
-        selected_ind = list(selected_ind)
-
-    # 跟踪功能开关
-    enable_trk = st.sidebar.radio("Enable Tracking", ("Yes", "No"))
-    
+    # 初始化selected_ind为所有类别
+    selected_ind = list(range(len(model.names)))
     # 添加阈值设置的标题和说明
     st.sidebar.markdown("""
     <div style="background-color:#f8f9fa; padding:10px; border-radius:8px; margin-top:15px; margin-bottom:10px;">
