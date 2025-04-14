@@ -153,8 +153,8 @@ def add_sidebar_navigation(current_page):
         
         # 侧边栏标题样式
         st.markdown("""
-        <div style="text-align:center;">
-            <h3 style="color:#FF6B6B; margin-bottom:10px; font-family:'Comic Sans MS', cursive; 
+        <div style="text-align:center; margin-top:-20px; margin-bottom:10px;">
+            <h3 style="color:#FF6B6B; margin-bottom:5px; font-family:'Comic Sans MS', cursive; 
                 text-shadow: 1px 1px 2px #FFD166;">
                 🐾 汪汪队立大功 🐾
             </h3>
@@ -187,7 +187,11 @@ def add_sidebar_navigation(current_page):
                     "font-weight": "bold", 
                     "color": "#4B8BF5", 
                     "text-align": "center", 
-                    "margin-bottom": "10px"
+                    "margin-top": "20px",  # 添加上边距使标题下移
+                    "margin-bottom": "10px",
+                    "display": "flex",  # 使用flex布局
+                    "justify-content": "center",  # 水平居中
+                    "align-items": "center"  # 垂直居中
                 }
             }
         )

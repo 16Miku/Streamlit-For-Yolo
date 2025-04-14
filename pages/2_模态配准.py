@@ -119,7 +119,7 @@ with col2:
     <div style="background-color:white; padding:10px; border-radius:10px; 
                 box-shadow:0 2px 5px rgba(0,0,0,0.1); margin-bottom:10px;">
         <h3 style="color:#4B8BF5; text-align:center; margin:0;">
-            配准后视频
+            融合后视频
         </h3>
     </div>
     """, unsafe_allow_html=True)
