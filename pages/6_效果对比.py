@@ -32,16 +32,14 @@ st.markdown("""
 # 添加侧边栏导航，使用新的页面名称
 add_sidebar_navigation("性能文件")  # 修改为"性能文件"
 
-# 侧边栏配置
-st.sidebar.title("数据分析设置")
-
-# 性能数据目录
-performance_dir = "a:/study/FuChuang/code/NpTZnOGYaGd-master/perform monitor"
+# 删除侧边栏配置和CSV文件选择部分
+# 性能数据目录 - 使用相对路径
+performance_dir = "perform monitor"
 
 # 确保目录存在
 if not os.path.exists(performance_dir):
     os.makedirs(performance_dir)
-    st.sidebar.warning(f"已创建性能数据目录: {performance_dir}")
+    st.info(f"已创建性能数据目录")
 
 # 获取可用的CSV文件
 csv_files = [f for f in os.listdir(performance_dir) if f.endswith('.csv')]
@@ -68,23 +66,45 @@ if not csv_files:
     st.success("已生成示例数据文件，可以继续分析")
     csv_files = ["example_metrics.csv"]
 
-# 选择CSV文件
-selected_csv = st.sidebar.selectbox("选择性能数据文件", csv_files)
-
-# 读取CSV文件
-csv_path = os.path.join(performance_dir, selected_csv)
-
+# 自动加载所有CSV文件并合并数据
 try:
     @st.cache_data
-    def load_data(path):
-        try:
-            return pd.read_csv(path)
-        except Exception as e:
-            st.error(f"读取CSV文件时出错: {e}")
-            # 返回一个空的DataFrame作为备用
-            return pd.DataFrame()
+    def load_all_data(csv_files, dir_path):
+        """加载所有CSV文件并合并数据"""
+        all_data = pd.DataFrame()
+        
+        for file in csv_files:
+            try:
+                file_path = os.path.join(dir_path, file)
+                df = pd.read_csv(file_path)
+                
+                # 如果是第一个文件，直接使用
+                if all_data.empty:
+                    all_data = df
+                else:
+                    # 尝试合并数据，基于共同的列
+                    common_cols = list(set(all_data.columns) & set(df.columns))
+                    if common_cols:
+                        # 如果有共同列，尝试合并
+                        all_data = pd.concat([all_data, df], ignore_index=True)
+                    else:
+                        # 如果没有共同列，添加新列
+                        for col in df.columns:
+                            if col not in all_data.columns:
+                                all_data[col] = np.nan
+                        
+                        temp_df = pd.DataFrame(columns=all_data.columns)
+                        for col in df.columns:
+                            temp_df[col] = df[col]
+                        
+                        all_data = pd.concat([all_data, temp_df], ignore_index=True)
+            except Exception as e:
+                st.error(f"读取CSV文件时出错: {e}")
+        
+        return all_data
     
-    df = load_data(csv_path)
+    # 加载所有CSV文件
+    df = load_all_data(csv_files, performance_dir)
     
     # 检查DataFrame是否为空
     if df.empty:
@@ -92,7 +112,7 @@ try:
     else:
         # 显示数据概览
         st.subheader("数据概览")
-        st.write(f"文件名: {selected_csv}")
+        st.write(f"已加载 {len(csv_files)} 个CSV文件")
         st.write(f"数据条数: {len(df)}")
         
         # 使用Streamlit原生dataframe替代mitosheet
@@ -112,7 +132,7 @@ try:
             st.download_button(
                 "下载编辑后的CSV",
                 csv,
-                f"edited_{selected_csv}",
+                f"combined_metrics.csv",
                 "text/csv",
                 key='download-csv'
             )
