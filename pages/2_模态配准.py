@@ -97,31 +97,8 @@ elif source == "演示模式":
         else:
             st.sidebar.error("演示视频文件不存在，请确保demo_original.mp4和demo_registered.mp4在当前目录")
 
-# 配准方法选择
-registration_method = st.sidebar.selectbox(
-    "配准方法",
-    ["特征点匹配", "互信息最大化", "光流法", "深度学习方法"]
-)
 
-# 配准精度滑块
-precision_col1, precision_col2 = st.sidebar.columns([3, 1])
-with precision_col1:
-    precision = float(st.slider(
-        "配准精度", 
-        min_value=0.0, 
-        max_value=1.0, 
-        value=0.8, 
-        step=0.05,
-        format="%.2f",
-        help="配准精度越高，计算时间越长"
-    ))
-with precision_col2:
-    st.markdown(f"""
-    <div style="background-color:transparent; padding:8px; border-radius:5px; 
-                text-align:center; margin-top:23px; border:1px dashed #d0d0d0;">
-        <span style="font-weight:bold; color:#4B8BF5;">{precision:.2f}</span>
-    </div>
-    """, unsafe_allow_html=True)
+
 
 # 创建两列布局
 col1, col2 = st.columns(2)

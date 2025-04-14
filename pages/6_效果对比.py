@@ -1,4 +1,4 @@
-# 效果对比页面
+# 效果对比页面 - 改名为性能文件
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -9,7 +9,7 @@ sys.path.append("a:/study/FuChuang/code/NpTZnOGYaGd-master")
 from utils.common import apply_custom_style, add_sidebar_navigation
 
 # 设置页面
-st.set_page_config(page_title="智能视频分析系统 - 去烟效果对比", layout="wide")
+st.set_page_config(page_title="智能视频分析系统 - 性能文件", layout="wide")  # 修改页面标题
 apply_custom_style()
 
 # 页面标题
@@ -18,7 +18,7 @@ st.markdown("""
     <h1 style="color:#4B8BF5; text-align:center; font-size:42px; 
         font-family: 'Arial', sans-serif; margin-top:-30px; margin-bottom:10px; 
         text-shadow: 2px 2px 4px rgba(0,0,0,0.1);">
-            去烟处理效果对比分析
+            性能文件分析  <!-- 修改页面标题 -->
     </h1>
 </div>
 <div>
@@ -29,8 +29,8 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# 添加侧边栏导航，使用正确的页面名称
-add_sidebar_navigation("去烟效果对比")
+# 添加侧边栏导航，使用新的页面名称
+add_sidebar_navigation("性能文件")  # 修改为"性能文件"
 
 # 侧边栏配置
 st.sidebar.title("数据分析设置")

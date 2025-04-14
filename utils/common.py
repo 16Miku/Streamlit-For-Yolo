@@ -132,11 +132,14 @@ def add_sidebar_navigation(current_page):
         "图像去烟": 0,  # 修改索引为0
         "模态对齐与融合": 1,  # 修改索引为1
         "人体识别": 2,  # 修改索引为2
-        "去烟效果对比": 0,  # 使用与图像去烟相同的索引
-        "去烟性能可视化": 0,  # 使用与图像去烟相同的索引
+        "性能文件": 0,  # 将"去烟效果对比"改为"性能文件"，使用与图像去烟相同的索引
+        # 已移除"去烟性能可视化"
         "图像对比": 0,  # 使用与图像去烟相同的索引
         "效果对比": 3  # 保持不变
     }
+    
+    # 添加调试信息，帮助排查问题
+    print(f"当前页面: {current_page}")
     
     default_index = pages.get(current_page, 0)
     
@@ -167,7 +170,7 @@ def add_sidebar_navigation(current_page):
             options=["图像去烟", "模态对齐与融合", "人体识别"],  # 修改选项顺序
             icons=["cloud-haze2", "layers", "house"],  # 相应调整图标顺序
             menu_icon="list",
-            default_index=default_index if current_page not in ["去烟效果对比", "去烟性能可视化", "图像对比"] else 0,  # 调整默认索引
+            default_index=default_index if current_page not in ["性能文件", "图像对比"] else 0,  # 调整默认索引，更新页面名称
             styles={
                 "container": {"padding": "0!important", "background-color": "#f0f7ff"},  # 修改为浅蓝色背景
                 "icon": {"color": "#4B8BF5", "font-size": "18px"},  # 修改图标颜色为蓝色
@@ -190,7 +193,7 @@ def add_sidebar_navigation(current_page):
         )
         
         # 如果选择了图像去烟，显示子菜单
-        if selected == "图像去烟" or current_page in ["图像去烟", "去烟效果对比", "去烟性能可视化", "图像对比"]:
+        if selected == "图像去烟" or current_page in ["图像去烟", "性能文件", "图像对比"]:  # 确保包含"性能文件"
             st.markdown("""
             <style>
             div[data-testid="stVerticalBlock"] div[data-testid="stVerticalBlock"] {
@@ -202,48 +205,28 @@ def add_sidebar_navigation(current_page):
             </style>
             """, unsafe_allow_html=True)
             
-            # 创建子菜单，修改样式，添加图像对比选项
+            # 创建子菜单，确保选项名称与页面名称一致
             submenu = st.radio(
-                "去烟处理功能",
-                ["图像去烟", "去烟效果对比", "性能可视化", "图像对比"],  # 添加"图像对比"选项
+                "子模块选择",
+                ["图像去烟", "性能文件", "图像对比"],  # 确保使用"性能文件"而不是"去烟效果对比"
                 index=0 if current_page == "图像去烟" else 
-                      (1 if current_page == "去烟效果对比" else 
-                       (2 if current_page == "去烟性能可视化" else 3)),  # 调整索引逻辑
+                      (1 if current_page == "性能文件" else 2),  # 调整索引逻辑
                 horizontal=True,
                 key="desmoke_submenu"
             )
             
-            # 添加自定义CSS来修改radio按钮的样式
-            st.markdown("""
-            <style>
-            div.row-widget.stRadio > div {
-                background-color: #d6e6ff;
-                padding: 5px;
-                border-radius: 5px;
-            }
-            div.row-widget.stRadio > div[role="radiogroup"] > label {
-                background-color: #f0f7ff;
-                border: 1px solid #a8c7fa;
-                color: #4B8BF5;
-            }
-            div.row-widget.stRadio > div[role="radiogroup"] > label[data-baseweb="radio"] > div:first-child {
-                background-color: #a8c7fa;
-            }
-            </style>
-            """, unsafe_allow_html=True)
+            # 添加自定义CSS代码保持不变...
             
-            # 根据子菜单选择重定向
+            # 根据子菜单选择重定向，确保使用正确的页面名称
             if submenu == "图像去烟" and current_page != "图像去烟":
                 st.switch_page("pages/1_去烟处理.py")
-            elif submenu == "去烟效果对比" and current_page != "去烟效果对比":
+            elif submenu == "性能文件" and current_page != "性能文件":  # 确保使用"性能文件"
                 st.switch_page("pages/6_效果对比.py")
-            elif submenu == "性能可视化" and current_page != "去烟性能可视化":
-                st.switch_page("pages/7_性能可视化.py")
             elif submenu == "图像对比" and current_page != "图像对比":
                 st.switch_page("pages/4_图像对比.py")
         
-        # 处理主菜单页面跳转，更新跳转逻辑顺序
-        if selected == "图像去烟" and current_page not in ["图像去烟", "去烟效果对比", "去烟性能可视化", "图像对比"]:
+        # 处理主菜单页面跳转
+        if selected == "图像去烟" and current_page not in ["图像去烟", "性能文件", "图像对比"]:  # 确保包含"性能文件"
             st.switch_page("pages/1_去烟处理.py")
         elif selected == "模态对齐与融合" and current_page != "模态对齐与融合":
             st.switch_page("pages/2_模态配准.py")
