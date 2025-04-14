@@ -113,7 +113,7 @@ if uploaded_file is not None:
                     
                     # 显示所有性能指标
                     fps_display.metric("FPS", f"{random_fps:.2f}")
-                    process_time_display.metric("每帧处理时间(s)", f"{row['time/frame']:.6f}")
+                    process_time_display.metric("每帧处理时间(s)", f"{row['time/frame']:.4f}")
                     entropy_display.metric("信息熵(bits)", f"{row['Entropy(bits)']:.4f}")
                     gradient_display.metric("平均梯度", f"{row['Avg_Gradient']:.4f}")
                     

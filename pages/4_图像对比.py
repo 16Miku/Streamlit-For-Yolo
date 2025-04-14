@@ -143,88 +143,88 @@ if image_pairs:
             img2=processed_path,
             label1="处理前",
             label2="处理后",
-            width=700
+            width=1200
         )
         
-        # 显示图片信息
-        col1, col2 = st.columns(2)
+        # # 显示图片信息
+        # col1, col2 = st.columns(2)
         
-        # 读取图片获取信息
-        raw_image = cv2.imread(raw_path)
-        processed_image = cv2.imread(processed_path)
+        # # 读取图片获取信息
+        # raw_image = cv2.imread(raw_path)
+        # processed_image = cv2.imread(processed_path)
         
-        if raw_image is not None and processed_image is not None:
-            with col1:
-                st.markdown("#### 原始图片信息")
-                st.markdown(f"- 尺寸: {raw_image.shape[1]} x {raw_image.shape[0]} 像素")
-                st.markdown(f"- 通道数: {raw_image.shape[2]}")
+        # if raw_image is not None and processed_image is not None:
+        #     with col1:
+        #         st.markdown("#### 原始图片信息")
+        #         st.markdown(f"- 尺寸: {raw_image.shape[1]} x {raw_image.shape[0]} 像素")
+        #         st.markdown(f"- 通道数: {raw_image.shape[2]}")
                 
-                # 计算信息熵
-                raw_entropy = 0
-                for i in range(3):  # 对RGB三个通道分别计算
-                    hist = cv2.calcHist([raw_image], [i], None, [256], [0, 256])
-                    hist = hist / hist.sum()
-                    raw_entropy -= np.sum(hist * np.log2(hist + 1e-7))
-                raw_entropy /= 3  # 取平均
+        #         # 计算信息熵
+        #         raw_entropy = 0
+        #         for i in range(3):  # 对RGB三个通道分别计算
+        #             hist = cv2.calcHist([raw_image], [i], None, [256], [0, 256])
+        #             hist = hist / hist.sum()
+        #             raw_entropy -= np.sum(hist * np.log2(hist + 1e-7))
+        #         raw_entropy /= 3  # 取平均
                 
-                st.markdown(f"- 信息熵: {raw_entropy:.4f}")
+        #         st.markdown(f"- 信息熵: {raw_entropy:.4f}")
                 
-                # 计算平均梯度
-                gray_raw = cv2.cvtColor(raw_image, cv2.COLOR_BGR2GRAY)
-                sobelx = cv2.Sobel(gray_raw, cv2.CV_64F, 1, 0, ksize=3)
-                sobely = cv2.Sobel(gray_raw, cv2.CV_64F, 0, 1, ksize=3)
-                raw_gradient = np.mean(np.sqrt(sobelx**2 + sobely**2))
+        #         # 计算平均梯度
+        #         gray_raw = cv2.cvtColor(raw_image, cv2.COLOR_BGR2GRAY)
+        #         sobelx = cv2.Sobel(gray_raw, cv2.CV_64F, 1, 0, ksize=3)
+        #         sobely = cv2.Sobel(gray_raw, cv2.CV_64F, 0, 1, ksize=3)
+        #         raw_gradient = np.mean(np.sqrt(sobelx**2 + sobely**2))
                 
-                st.markdown(f"- 平均梯度: {raw_gradient:.4f}")
+        #         st.markdown(f"- 平均梯度: {raw_gradient:.4f}")
                 
-            with col2:
-                st.markdown("#### 处理后图片信息")
-                st.markdown(f"- 尺寸: {processed_image.shape[1]} x {processed_image.shape[0]} 像素")
-                st.markdown(f"- 通道数: {processed_image.shape[2]}")
+        #     with col2:
+        #         st.markdown("#### 处理后图片信息")
+        #         st.markdown(f"- 尺寸: {processed_image.shape[1]} x {processed_image.shape[0]} 像素")
+        #         st.markdown(f"- 通道数: {processed_image.shape[2]}")
                 
-                # 计算信息熵
-                processed_entropy = 0
-                for i in range(3):  # 对RGB三个通道分别计算
-                    hist = cv2.calcHist([processed_image], [i], None, [256], [0, 256])
-                    hist = hist / hist.sum()
-                    processed_entropy -= np.sum(hist * np.log2(hist + 1e-7))
-                processed_entropy /= 3  # 取平均
+        #         # 计算信息熵
+        #         processed_entropy = 0
+        #         for i in range(3):  # 对RGB三个通道分别计算
+        #             hist = cv2.calcHist([processed_image], [i], None, [256], [0, 256])
+        #             hist = hist / hist.sum()
+        #             processed_entropy -= np.sum(hist * np.log2(hist + 1e-7))
+        #         processed_entropy /= 3  # 取平均
                 
-                st.markdown(f"- 信息熵: {processed_entropy:.4f}")
+        #         st.markdown(f"- 信息熵: {processed_entropy:.4f}")
                 
-                # 计算平均梯度
-                gray_processed = cv2.cvtColor(processed_image, cv2.COLOR_BGR2GRAY)
-                sobelx = cv2.Sobel(gray_processed, cv2.CV_64F, 1, 0, ksize=3)
-                sobely = cv2.Sobel(gray_processed, cv2.CV_64F, 0, 1, ksize=3)
-                processed_gradient = np.mean(np.sqrt(sobelx**2 + sobely**2))
+        #         # 计算平均梯度
+        #         gray_processed = cv2.cvtColor(processed_image, cv2.COLOR_BGR2GRAY)
+        #         sobelx = cv2.Sobel(gray_processed, cv2.CV_64F, 1, 0, ksize=3)
+        #         sobely = cv2.Sobel(gray_processed, cv2.CV_64F, 0, 1, ksize=3)
+        #         processed_gradient = np.mean(np.sqrt(sobelx**2 + sobely**2))
                 
-                st.markdown(f"- 平均梯度: {processed_gradient:.4f}")
+        #         st.markdown(f"- 平均梯度: {processed_gradient:.4f}")
                 
-            # 显示改进指标
-            st.markdown("#### 改进指标")
+        #     # 显示改进指标
+        #     st.markdown("#### 改进指标")
             
-            # 计算信息熵变化
-            entropy_change = processed_entropy - raw_entropy
-            entropy_change_percent = (entropy_change / raw_entropy) * 100 if raw_entropy != 0 else 0
+        #     # 计算信息熵变化
+        #     entropy_change = processed_entropy - raw_entropy
+        #     entropy_change_percent = (entropy_change / raw_entropy) * 100 if raw_entropy != 0 else 0
             
-            # 计算平均梯度变化
-            gradient_change = processed_gradient - raw_gradient
-            gradient_change_percent = (gradient_change / raw_gradient) * 100 if raw_gradient != 0 else 0
+        #     # 计算平均梯度变化
+        #     gradient_change = processed_gradient - raw_gradient
+        #     gradient_change_percent = (gradient_change / raw_gradient) * 100 if raw_gradient != 0 else 0
             
-            # 显示变化
-            col1, col2 = st.columns(2)
-            with col1:
-                st.metric(
-                    "信息熵变化", 
-                    f"{entropy_change:.4f}", 
-                    f"{entropy_change_percent:.2f}%"
-                )
-            with col2:
-                st.metric(
-                    "平均梯度变化", 
-                    f"{gradient_change:.4f}", 
-                    f"{gradient_change_percent:.2f}%"
-                )
+        #     # 显示变化
+        #     col1, col2 = st.columns(2)
+        #     with col1:
+        #         st.metric(
+        #             "信息熵变化", 
+        #             f"{entropy_change:.4f}", 
+        #             f"{entropy_change_percent:.2f}%"
+        #         )
+        #     with col2:
+        #         st.metric(
+        #             "平均梯度变化", 
+        #             f"{gradient_change:.4f}", 
+        #             f"{gradient_change_percent:.2f}%"
+        #         )
 else:
     # 如果没有图片对，显示提示
     st.info("请在侧边栏上传处理前后的图片进行对比。")

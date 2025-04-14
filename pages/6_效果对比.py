@@ -32,99 +32,73 @@ st.markdown("""
 # 添加侧边栏导航，使用新的页面名称
 add_sidebar_navigation("性能文件")  # 修改为"性能文件"
 
-# 删除侧边栏配置和CSV文件选择部分
-# 性能数据目录 - 使用相对路径
-performance_dir = "perform monitor"
+# 性能数据文件路径 - 使用绝对路径
+metrics_file_path = "a:/study/FuChuang/code/NpTZnOGYaGd-master/perform monitor/rgb_smoked_dehazed_image_metrics.csv"
 
-# 确保目录存在
-if not os.path.exists(performance_dir):
-    os.makedirs(performance_dir)
-    st.info(f"已创建性能数据目录")
-
-# 获取可用的CSV文件
-csv_files = [f for f in os.listdir(performance_dir) if f.endswith('.csv')]
-
-if not csv_files:
-    # 如果没有找到CSV文件，自动生成一个示例文件
-    st.warning("未找到性能数据文件。正在生成示例数据...")
-    
-    # 创建示例数据
-    frames = 50
-    example_data = {
-        'Frame': list(range(1, frames + 1)),
-        'Entropy(bits)': np.random.uniform(5.0, 7.0, frames),
-        'Avg_Gradient': np.random.uniform(10.0, 30.0, frames),
-        'PSNR': np.random.uniform(25.0, 35.0, frames),
-        'SSIM': np.random.uniform(0.7, 0.95, frames),
-        'Processing_Time(ms)': np.random.uniform(20.0, 50.0, frames)
-    }
-    
-    example_df = pd.DataFrame(example_data)
-    example_path = os.path.join(performance_dir, "example_metrics.csv")
-    example_df.to_csv(example_path, index=False)
-    
-    st.success("已生成示例数据文件，可以继续分析")
-    csv_files = ["example_metrics.csv"]
-
-# 自动加载所有CSV文件并合并数据
+# 尝试加载指定的CSV文件
 try:
     @st.cache_data
-    def load_all_data(csv_files, dir_path):
-        """加载所有CSV文件并合并数据"""
-        all_data = pd.DataFrame()
-        
-        for file in csv_files:
-            try:
-                file_path = os.path.join(dir_path, file)
-                df = pd.read_csv(file_path)
-                
-                # 如果是第一个文件，直接使用
-                if all_data.empty:
-                    all_data = df
-                else:
-                    # 尝试合并数据，基于共同的列
-                    common_cols = list(set(all_data.columns) & set(df.columns))
-                    if common_cols:
-                        # 如果有共同列，尝试合并
-                        all_data = pd.concat([all_data, df], ignore_index=True)
-                    else:
-                        # 如果没有共同列，添加新列
-                        for col in df.columns:
-                            if col not in all_data.columns:
-                                all_data[col] = np.nan
-                        
-                        temp_df = pd.DataFrame(columns=all_data.columns)
-                        for col in df.columns:
-                            temp_df[col] = df[col]
-                        
-                        all_data = pd.concat([all_data, temp_df], ignore_index=True)
-            except Exception as e:
-                st.error(f"读取CSV文件时出错: {e}")
-        
-        return all_data
+    def load_metrics_data(file_path):
+        """加载指定的CSV文件"""
+        try:
+            df = pd.read_csv(file_path)
+            return df
+        except Exception as e:
+            st.error(f"读取CSV文件时出错: {e}")
+            return pd.DataFrame()
     
-    # 加载所有CSV文件
-    df = load_all_data(csv_files, performance_dir)
+    # 加载CSV文件
+    df = load_metrics_data(metrics_file_path)
     
     # 检查DataFrame是否为空
     if df.empty:
         st.error("数据为空或无法读取，请检查CSV文件格式")
     else:
-        # 显示数据概览
-        st.subheader("数据概览")
-        st.write(f"已加载 {len(csv_files)} 个CSV文件")
-        st.write(f"数据条数: {len(df)}")
+        # # 显示数据概览
+        # st.subheader("数据概览")
+        # st.write(f"数据来源: rgb_smoked_dehazed_image_metrics.csv")
+        # st.write(f"数据条数: {len(df)}")
         
-        # 使用Streamlit原生dataframe替代mitosheet
+        # # 显示列名和数据类型
+        # st.write("数据结构:")
+        # st.write(df.dtypes)
+        
+        # # 显示基本统计信息
+        # st.subheader("基本统计信息")
+        # st.write(df.describe())
+        
+        # 使用Streamlit原生dataframe显示数据
         st.subheader("数据表格")
         
         # 添加编辑功能
         try:
+            # 使用data_editor显示数据表格
             edited_df = st.data_editor(
                 df,
                 use_container_width=True,
                 num_rows="dynamic",
-                hide_index=False
+                hide_index=False,
+                column_config={
+                    "Image": st.column_config.TextColumn(
+                        "图像文件名",
+                        width="medium",
+                    ),
+                    "Entropy(bits)": st.column_config.NumberColumn(
+                        "信息熵(bits)",
+                        format="%.4f",
+                        width="medium",
+                    ),
+                    "Avg_Gradient": st.column_config.NumberColumn(
+                        "平均梯度",
+                        format="%.4f",
+                        width="medium",
+                    ),
+                    "processing time/frame": st.column_config.NumberColumn(
+                        "每帧处理时间(s)",
+                        format="%.6f",
+                        width="medium",
+                    ),
+                }
             )
             
             # 添加下载按钮
@@ -132,99 +106,60 @@ try:
             st.download_button(
                 "下载编辑后的CSV",
                 csv,
-                f"combined_metrics.csv",
+                f"edited_metrics.csv",
                 "text/csv",
                 key='download-csv'
             )
+            
+            # # 添加数据可视化
+            # st.subheader("数据可视化")
+            
+            # # 创建两列布局
+            # col1, col2 = st.columns(2)
+            
+            # with col1:
+            #     # 信息熵分布图
+            #     st.write("信息熵分布")
+            #     fig1, ax1 = plt.subplots(figsize=(10, 6))
+            #     ax1.hist(df["Entropy(bits)"], bins=20, alpha=0.7, color='blue')
+            #     ax1.set_xlabel("信息熵(bits)")
+            #     ax1.set_ylabel("频率")
+            #     ax1.grid(True, linestyle='--', alpha=0.7)
+            #     st.pyplot(fig1)
+            
+            # with col2:
+            #     # 平均梯度分布图
+            #     st.write("平均梯度分布")
+            #     fig2, ax2 = plt.subplots(figsize=(10, 6))
+            #     ax2.hist(df["Avg_Gradient"], bins=20, alpha=0.7, color='green')
+            #     ax2.set_xlabel("平均梯度")
+            #     ax2.set_ylabel("频率")
+            #     ax2.grid(True, linestyle='--', alpha=0.7)
+            #     st.pyplot(fig2)
+            
+            # # 处理时间分布
+            # st.write("处理时间分布")
+            # fig3, ax3 = plt.subplots(figsize=(10, 6))
+            # ax3.hist(df["processing time/frame"], bins=20, alpha=0.7, color='red')
+            # ax3.set_xlabel("处理时间(s)")
+            # ax3.set_ylabel("频率")
+            # ax3.grid(True, linestyle='--', alpha=0.7)
+            # st.pyplot(fig3)
+            
+            # # 信息熵与平均梯度的散点图
+            # st.write("信息熵与平均梯度的关系")
+            # fig4, ax4 = plt.subplots(figsize=(10, 6))
+            # ax4.scatter(df["Entropy(bits)"], df["Avg_Gradient"], alpha=0.5, color='purple')
+            # ax4.set_xlabel("信息熵(bits)")
+            # ax4.set_ylabel("平均梯度")
+            # ax4.grid(True, linestyle='--', alpha=0.7)
+            # st.pyplot(fig4)
+            
         except Exception as e:
             st.error(f"显示数据表格时出错: {e}")
             st.write("原始数据预览:")
             st.write(df.head())
-        
-        # 数据可视化
-        st.subheader("性能指标可视化")
-        
-        # 选择要可视化的指标
-        metrics = df.columns.tolist()
-        if 'Frame' in metrics:
-            metrics.remove('Frame')  # 移除帧索引列
-        
-        if not metrics:
-            st.warning("没有可用于可视化的指标列")
-        else:
-            selected_metrics = st.multiselect(
-                "选择要可视化的指标",
-                metrics,
-                default=metrics[:2] if len(metrics) >= 2 else metrics
-            )
-            
-            if selected_metrics:
-                try:
-                    # 创建折线图
-                    fig, ax = plt.subplots(figsize=(10, 6))
-                    
-                    for metric in selected_metrics:
-                        ax.plot(df['Frame'] if 'Frame' in df.columns else df.index, 
-                                df[metric], 
-                                label=metric)
-                    
-                    ax.set_xlabel('帧')
-                    ax.set_ylabel('指标值')
-                    ax.set_title('视频处理性能指标')
-                    ax.legend()
-                    ax.grid(True)
-                    
-                    st.pyplot(fig)
-                    
-                    # 添加统计分析
-                    st.subheader("统计分析")
-                    
-                    # 计算选定指标的统计信息
-                    stats = df[selected_metrics].describe()
-                    st.write(stats)
-                    
-                    # 添加柱状图比较
-                    st.subheader("指标平均值比较")
-                    
-                    avg_values = df[selected_metrics].mean()
-                    
-                    fig, ax = plt.subplots(figsize=(10, 6))
-                    ax.bar(avg_values.index, avg_values.values)
-                    ax.set_ylabel('平均值')
-                    ax.set_title('性能指标平均值比较')
-                    ax.grid(True, axis='y')
-                    
-                    # 旋转x轴标签以便更好地显示
-                    plt.xticks(rotation=45)
-                    
-                    st.pyplot(fig)
-                    
-                    # 添加相关性分析
-                    if len(selected_metrics) > 1:
-                        st.subheader("指标相关性分析")
-                        
-                        corr = df[selected_metrics].corr()
-                        
-                        fig, ax = plt.subplots(figsize=(10, 8))
-                        cax = ax.matshow(corr, cmap='coolwarm')
-                        fig.colorbar(cax)
-                        
-                        # 添加相关系数标签
-                        for i in range(len(corr.columns)):
-                            for j in range(len(corr.columns)):
-                                ax.text(i, j, f"{corr.iloc[j, i]:.2f}", 
-                                        va='center', ha='center')
-                        
-                        ax.set_xticks(range(len(corr.columns)))
-                        ax.set_yticks(range(len(corr.columns)))
-                        ax.set_xticklabels(corr.columns, rotation=45)
-                        ax.set_yticklabels(corr.columns)
-                        
-                        st.pyplot(fig)
-                except Exception as e:
-                    st.error(f"生成可视化图表时出错: {e}")
-                    st.info("请检查数据格式是否正确，或选择其他指标进行可视化")
 
 except Exception as e:
     st.error(f"处理数据时出错: {e}")
-    st.info("请检查CSV文件格式是否正确，或尝试重新生成数据文件")
+    st.info("请检查CSV文件格式是否正确，或确认文件路径是否存在")
