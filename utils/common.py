@@ -153,8 +153,8 @@ def add_sidebar_navigation(current_page):
         
         # 侧边栏标题样式
         st.markdown("""
-        <div style="text-align:center; margin-top:-20px; margin-bottom:10px;">
-            <h3 style="color:#FF6B6B; margin-bottom:5px; font-family:'Comic Sans MS', cursive; 
+        <div style="text-align:center; margin-top:-40px; margin-bottom:20px;">
+            <h3 style="color:#FF6B6B; margin-bottom:10px; font-family:'Comic Sans MS', cursive; 
                 text-shadow: 1px 1px 2px #FFD166;">
                 🐾 汪汪队立大功 🐾
             </h3>
