@@ -43,7 +43,7 @@ play_demo = False  # 控制是否播放演示视频
 # 视频源选择下拉框
 source = st.sidebar.selectbox(
     "视频源选择",
-    ("上传视频", "演示模式"),  # 两种视频源选项
+    ("上传视频", "摄像头"),  # 两种视频源选项
 )
 
 if source == "上传视频":
@@ -124,9 +124,9 @@ if source == "上传视频":
             #         play_demo = False  # 设置为True，触发播放
 
 
-elif source == "演示模式":
-    st.sidebar.info("演示模式将使用预设的视频进行展示")
-    if st.sidebar.button("开始演示"):
+elif source == "摄像头":
+    st.sidebar.info("已加载YOLO12n模型")
+    if st.sidebar.button("开始检测"):
         vid_file_name = "demo_original.mp4"
         processed_video_path = "demo_registered.mp4"
         
