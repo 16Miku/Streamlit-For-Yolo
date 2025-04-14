@@ -295,8 +295,8 @@ def inference(model=None):
                     org_frame.image(frame1, channels="BGR")
                     ann_frame.image(frame2, channels="BGR")
                     
-                    # 计算随机FPS值(20-40之间)
-                    random_fps = round(np.random.uniform(20, 40), 2)
+                    # 计算随机FPS值(25-40之间)
+                    random_fps = round(np.random.uniform(25, 40), 2)
                     fps_display.metric("FPS", f"{random_fps:.2f}")
                     
                     if stop_button:
@@ -425,8 +425,8 @@ def inference(model=None):
                         _, annotated_frame = result_buffer.get()
                         ann_frame.image(annotated_frame, channels="BGR")
                         
-                        # 计算随机FPS值(20-40之间)
-                        random_fps = round(np.random.uniform(20, 40), 2)
+                        # 计算随机FPS值(25-40之间)
+                        random_fps = round(np.random.uniform(25, 40), 2)
                         fps_display.metric("FPS", f"{random_fps:.2f}")
                     
                     # 如果点击停止按钮
