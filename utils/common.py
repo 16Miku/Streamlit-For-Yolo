@@ -129,15 +129,13 @@ def add_sidebar_navigation(current_page):
     """添加侧边栏导航菜单，高亮当前页面"""
     # 获取当前页面的索引
     pages = {
-        "人体识别": 0,
-        "图像去烟": 1,
-        "去烟效果对比": 1,  # 使用相同的索引，表示它是图像去烟的子页面
-        "去烟性能可视化": 1,  # 新增性能可视化子页面
-        "图像对比": 1,  # 修改为与图像去烟相同的索引，表示它是图像去烟的子模块
-        "模态对齐与融合模块": 2,
-        "数据分析": 3,
-        # "视频对比": 5,  # 已注释掉
-        "效果对比": 4  # 索引调整为4
+        "图像去烟": 0,  # 修改索引为0
+        "模态对齐与融合": 1,  # 修改索引为1
+        "人体识别": 2,  # 修改索引为2
+        "去烟效果对比": 0,  # 使用与图像去烟相同的索引
+        "去烟性能可视化": 0,  # 使用与图像去烟相同的索引
+        "图像对比": 0,  # 使用与图像去烟相同的索引
+        "效果对比": 3  # 保持不变
     }
     
     default_index = pages.get(current_page, 0)
@@ -163,13 +161,13 @@ def add_sidebar_navigation(current_page):
         </div>
         """, unsafe_allow_html=True)
         
-        # 使用option_menu创建导航菜单，修改样式为浅蓝色
+        # 使用option_menu创建导航菜单，修改选项顺序
         selected = option_menu(
             menu_title="功能导航",
-            options=["人体识别", "图像去烟", "模态对齐与融合模块", "数据分析"],  # 移除"图像对比"选项
-            icons=["house", "cloud-haze2", "layers", "graph-up"],  # 相应调整图标
+            options=["图像去烟", "模态对齐与融合", "人体识别"],  # 修改选项顺序
+            icons=["cloud-haze2", "layers", "house"],  # 相应调整图标顺序
             menu_icon="list",
-            default_index=default_index if current_page not in ["去烟效果对比", "去烟性能可视化", "图像对比"] else 1,  # 如果是子页面，高亮父页面
+            default_index=default_index if current_page not in ["去烟效果对比", "去烟性能可视化", "图像对比"] else 0,  # 调整默认索引
             styles={
                 "container": {"padding": "0!important", "background-color": "#f0f7ff"},  # 修改为浅蓝色背景
                 "icon": {"color": "#4B8BF5", "font-size": "18px"},  # 修改图标颜色为蓝色
@@ -244,12 +242,11 @@ def add_sidebar_navigation(current_page):
             elif submenu == "图像对比" and current_page != "图像对比":
                 st.switch_page("pages/4_图像对比.py")
         
-        # 处理主菜单页面跳转
-        if selected == "人体识别" and current_page not in ["人体识别"]:
-            st.switch_page("app.py")
-        elif selected == "图像去烟" and current_page not in ["图像去烟", "去烟效果对比", "去烟性能可视化", "图像对比"]:
+        # 处理主菜单页面跳转，更新跳转逻辑顺序
+        if selected == "图像去烟" and current_page not in ["图像去烟", "去烟效果对比", "去烟性能可视化", "图像对比"]:
             st.switch_page("pages/1_去烟处理.py")
-        elif selected == "模态对齐与融合模块" and current_page != "模态对齐与融合模块":
+        elif selected == "模态对齐与融合" and current_page != "模态对齐与融合":
             st.switch_page("pages/2_模态配准.py")
-        elif selected == "数据分析" and current_page != "数据分析":
-            st.switch_page("pages/3_数据分析.py")
+        elif selected == "人体识别" and current_page not in ["人体识别"]:
+            st.switch_page("app.py")
+
