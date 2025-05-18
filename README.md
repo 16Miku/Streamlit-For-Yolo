@@ -417,9 +417,16 @@ NpTZnOGYaGd-master/
 ### 安装依赖
 
 首先，确保您已安装Python 3.8或更高版本，然后安装所需依赖：
+```bash
+conda create --name streamlit python=3.8
+conda activate streamlit
+```
+
+
+
 
 ```bash
-pip install streamlit opencv-python numpy pandas matplotlib ultralytics streamlit-image-comparison
+pip install streamlit opencv-python numpy pandas matplotlib ultralytics streamlit-image-comparison streamlit-option_menu
 ```
 
 ### 运行应用
